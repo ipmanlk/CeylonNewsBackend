@@ -1,0 +1,15 @@
+# Exclude build artifacts and directories
+bin/
+build/
+*.log
+
+# Exclude editor-specific files and directories
+.vscode/
+.idea/
+
+
+.env
+
+node_modules
+
+env.prod

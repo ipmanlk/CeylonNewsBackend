@@ -1,0 +1,58 @@
+version: "3.6"
+services:
+  mysql:
+    image: mysql:8
+    container_name: cndb
+    environment:
+      MYSQL_DATABASE: cn
+      MYSQL_ROOT_PASSWORD: "root"
+    ports:
+      - "3308:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - cn_network
+
+  splash:
+    build:
+      context: ./scrape-it
+      dockerfile: Dockerfile
+    container_name: splash
+    ports:
+      - "8050:8050"
+    networks:
+      - cn_network
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+
+  cnapi:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: cnapi
+    ports:
+      - "3500:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      splash:
+        condition: service_started
+    env_file: ./env.dev
+    networks:
+      - cn_network
+    develop:
+      watch:
+        - action: rebuild
+          files:
+            - ./**/*.go
+            - ./go.mod
+            - ./go.sum
+
+networks:
+  cn_network:
+    name: cn_network
+    driver: bridge

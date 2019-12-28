@@ -1,0 +1,22 @@
+# Exclude build artifacts and directories
+bin/
+build/
+*.log
+
+# Exclude version control files and directories
+.git/
+.gitignore
+
+# Exclude editor-specific files and directories
+.vscode/
+.idea/
+.sublime
+
+# Exclude test files and directories
+*_test.go
+tests/
+
+compose.*.yml
+Dockerfile*
+
+node_modules

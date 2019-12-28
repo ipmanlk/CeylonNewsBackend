@@ -1,0 +1,35 @@
+version: "3.6"
+services:
+  splash:
+    build:
+      context: ./scrape-it
+      dockerfile: Dockerfile
+    container_name: splash
+    restart: unless-stopped
+    ports:
+      - "8050:8050"
+    networks:
+      - cn_network
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+  cnapi:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: cnapi
+    restart: unless-stopped
+    ports:
+      - "3500:8080"
+    depends_on:
+      splash:
+        condition: service_started
+    env_file: ./env.prod
+    networks:
+      - cn_network
+
+networks:
+  cn_network:
+    name: cn_network
+    driver: bridge
