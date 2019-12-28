@@ -1,0 +1,19 @@
+{
+  "name": "ceylon-news",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "express": "^4.17.1",
+    "moment-timezone": "^0.5.27",
+    "rss-parser": "^3.7.3",
+    "sqlite3": "^4.1.1"
+  }
+}
