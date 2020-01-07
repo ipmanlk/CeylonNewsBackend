@@ -41,9 +41,9 @@ const handle = (req, res) => {
     }
 
     // check for new posts
-    if (params.lang && params.check_news && params.sources) {
+    if (params.check_news && params.sources) {
         const sources = params.sources.split(",") || [];
-        getNews.getLatestId(params.lang, sources).then(latestId => {
+        getNews.getLatestId(sources).then(latestId => {
             res.json(latestId);
         }).catch(e => {
             console.log(e);
@@ -53,7 +53,7 @@ const handle = (req, res) => {
 
     // initial news list
     const sources = params.sources.split(",") || [];
-    getNews.getNewsList(params.lang, sources).then(newsList => {
+    getNews.getNewsList(sources).then(newsList => {
         res.json(newsList);
     }).catch(e => {
         console.log(e);
