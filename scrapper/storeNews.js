@@ -8,7 +8,7 @@ const save = async (newsData) => {
     let news = clean(newsData);
     if (!news.title || news.title == "" || news.title.trim() == "") return;
     const currentDateTime = moment().tz('Asia/Colombo').format('YYYY-MM-DD hh:mm A');
-    await db.run("INSERT INTO news(title, post, link, source_id, time) VALUES(?,?,?,?, ?)", [news.title, news.post, news.link, news.source_id, currentDateTime]).catch(e => console.log(e));
+    await db.run("INSERT INTO news(title, post, link, source_id, time, main_img) VALUES(?,?,?,?,?,?)", [news.title, news.post, news.link, news.source_id, currentDateTime, news.main_img]).catch(e => console.log(e));
 }
 
 // remove useless elements from news item

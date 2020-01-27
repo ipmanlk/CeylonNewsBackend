@@ -12,16 +12,19 @@ const scrapeNews = async () => {
     const sources = await getSources().catch(e => console.log(e));
 
     // loop through each rss feed
-    sources.forEach(async(source) => {
+    sources.forEach(async (source) => {
         const feed = await parser.parseURL(source.feed);
 
         // loop through posts in each rss feed
         feed.items.forEach(item => {
-            let newsData = {
+            const main_img = getMainImg(item.content);
+
+            const newsData = {
                 source_id: source.id,
                 title: item.title,
                 post: item.content,
-                link: item.link
+                link: item.link,
+                main_img: main_img
             };
 
             storeNews.save(newsData).catch(e => {
@@ -30,6 +33,16 @@ const scrapeNews = async () => {
 
         });
     });
+}
+
+const getMainImg = (post) => {
+    const regEx = /<img.+src\=(?:\"|\')(.+?)(?:\"|\')(?:.+?)\>/;
+    try {
+        let imgs = (regEx.exec(`${post}`));
+        return imgs[3] || imgs[2] || imgs[1];
+    } catch (e) {
+        return "null";
+    }
 }
 
 const getSources = async () => {
