@@ -22,9 +22,9 @@ const handle = (req, res) => {
     }
 
     // load more
-    if (params.action == "news-list-old" && params.news_id) {
+    if (params.action == "news-list-old" && params.news_id && params.sources) {
         const sources = params.sources.split(",") || [];
-        getNews.getNewsList(params.lang, sources, params.last_news_id).then(newsList => {
+        getNews.getNewsList(sources, params.news_id).then(newsList => {
             res.json(newsList);
         }).catch(e => {
             console.log(e);
