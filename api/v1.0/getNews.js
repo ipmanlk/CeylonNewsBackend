@@ -26,7 +26,7 @@ const getNewsPost = (newsId) => {
 }
 
 const getNewsSources = (lang) => {
-    let sql = `SELECT id, name, desc FROM source WHERE lang = '${lang}'`;
+    let sql = `SELECT id, name, desc, enabled FROM source WHERE lang = '${lang}'`;
     return db.getAll(sql);
 }
 
