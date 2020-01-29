@@ -11,7 +11,7 @@ const getNewsList = (sources = [], lastNewsId = false) => {
             sql = `SELECT n.id, n.title, n.time, n.main_img, s.name as source FROM news n,source s WHERE n.id < '${lastNewsId}' AND n.source_id IN (${sourcesStr}) AND s.id = n.source_id ORDER BY n.id DESC LIMIT 8;`;
         } else {
             // initial news list
-            sql = `SELECT n.id, n.title, n.time, n.main_img, s.name as source FROM news n,source s WHERE n.source_id IN (${sourcesStr}) AND s.id = n.source_id ORDER BY n.id DESC LIMIT 8;`;
+            sql = `SELECT n.id, n.title, n.time, n.main_img, s.name as source FROM news n,source s WHERE n.source_id IN (${sourcesStr}) AND s.id = n.source_id ORDER BY n.id DESC LIMIT 20;`;
         }
 
         return db.getAll(sql);
