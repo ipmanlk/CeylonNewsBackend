@@ -39,7 +39,9 @@ const getMainImg = (post) => {
     const regEx = /<img.+src\=(?:\"|\')(.+?)(?:\"|\')(?:.+?)\>/;
     try {
         let imgs = (regEx.exec(`${post}`));
-        return imgs[3] || imgs[2] || imgs[1];
+        let img = imgs[3] || imgs[2] || imgs[1];
+        img = img.replace(/^http:\/\//i, 'https://');
+        return img;
     } catch (e) {
         return "null";
     }
