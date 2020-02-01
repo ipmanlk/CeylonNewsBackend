@@ -10,6 +10,7 @@ const handle = (req, res) => {
         }).catch(e => {
             console.log(e);
         });
+        return;
     }
 
     // news sources list
@@ -19,6 +20,7 @@ const handle = (req, res) => {
         }).catch(e => {
             console.log(e);
         });
+        return;
     }
 
     // load more
@@ -29,6 +31,7 @@ const handle = (req, res) => {
         }).catch(e => {
             console.log(e);
         });
+        return;
     }
 
     // check for new posts
@@ -39,6 +42,7 @@ const handle = (req, res) => {
         }).catch(e => {
             console.log(e);
         });
+        return;
     }
 
 
@@ -51,7 +55,10 @@ const handle = (req, res) => {
         }).catch(e => {
             console.log(e);
         });
+        return;
     }
+
+    res.status(404).send("Sorry can't find that!");
 }
 
 module.exports = {
