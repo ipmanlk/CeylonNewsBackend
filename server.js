@@ -1,14 +1,22 @@
-const express = require('express')
-const app = express()
-const port = 3000
+const express = require('express');
+const app = express();
+const port = 3001;
 
 app.get('/:version', (req, res) => {
-    const api = require(`./api/${req.params.version}/handle.js`);
-    api.handle(req, res);
+    try {
+        const api = require(`./api/${req.params.version}/handle.js`);
+        api.handle(req, res);
+    } catch (error) {
+        send404Error(res);
+    }
 });
 
 app.use((req, res, next) => {
-    res.status(404).send("Sorry can't find that!")
+    send404Error(res);
 });
+
+const send404Error = (res) => {
+    res.status(404).send("Sorry can't find that!");
+}
 
 app.listen(port, () => console.log(`Ceylon News is running on port ${port}!`));
