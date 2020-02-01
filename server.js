@@ -16,7 +16,7 @@ app.use((req, res, next) => {
 });
 
 const send404Error = (res) => {
-    res.status(404).send("Sorry can't find that!");
+    res.status(404).send(JSON.stringify({"error": "Sorry can't find that!"}));
 }
 
 app.listen(port, () => console.log(`Ceylon News is running on port ${port}!`));

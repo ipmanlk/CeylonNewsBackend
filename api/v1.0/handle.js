@@ -58,7 +58,7 @@ const handle = (req, res) => {
         return;
     }
 
-    res.status(404).send("Sorry can't find that!");
+    res.status(404).send(JSON.stringify({"error": "Sorry can't find that!"}));
 }
 
 module.exports = {
