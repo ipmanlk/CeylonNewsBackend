@@ -26,3 +26,6 @@ const send404Error = (res) => {
 }
 
 app.listen(port, () => console.log(`Ceylon News is running on port ${port}!`));
+
+// for testing
+module.exports = app; 
