@@ -6,7 +6,11 @@ const handle = (req, res) => {
     // news post
     if (params.action == "news-post" && params.post_id) {
         getNews.getNewsPost(params.post_id).then(newsPost => {
-            res.json(newsPost);
+            if (newsPost == undefined) {
+                res.status(404).send(JSON.stringify({ "error": "Unable to locate that post." }));
+            } else {
+                res.json(newsPost);
+            }
         }).catch(e => {
             console.log(e);
         });
@@ -58,7 +62,7 @@ const handle = (req, res) => {
         return;
     }
 
-    res.status(404).send(JSON.stringify({"error": "Sorry can't find that!"}));
+    res.status(404).send(JSON.stringify({ "error": "Sorry can't find that!" }));
 }
 
 module.exports = {
