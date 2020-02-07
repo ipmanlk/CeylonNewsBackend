@@ -1,5 +1,5 @@
-<a href="https://aimeos.org/">
-    <img src="https://raw.githubusercontent.com/ipmanlk/CeylonNews/master/res/icon/android/xxxhdpi.png" alt="Aimeos logo" title="Aimeos" align="right" height="60" />
+<a href="https://www.navinda.xyz">
+    <img src="https://raw.githubusercontent.com/ipmanlk/CeylonNews/master/res/icon/android/xxxhdpi.png" alt="CeylonNews logo" title="CeylonNews" align="right" height="60" />
 </a>
 
 CeylonNewsBackend (News Scrapper + API)
