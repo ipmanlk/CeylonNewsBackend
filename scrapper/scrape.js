@@ -1,4 +1,5 @@
 const { SQLite } = require("../libs/dmxSQLite");
+const CronJob = require('cron').CronJob;
 const Parser = require('rss-parser');
 const db = new SQLite(`${__dirname}/../db/cn.db`);
 const parser = new Parser();
@@ -52,6 +53,13 @@ const getSources = async () => {
     return sources;
 }
 
-start().catch(e => {
-    console.log(e);
-});
+const scrapeCronJob = new CronJob("*/5 * * * *", () => {
+    start().catch(e => {
+        console.log(e);
+    });
+}, null, true, 'America/Los_Angeles');
+
+
+module.exports = {
+    scrapeCronJob
+}

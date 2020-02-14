@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 3001;
+const port = 3000;
 
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -25,7 +25,12 @@ const send404Error = (res) => {
     res.status(404).send(JSON.stringify({ "error": "Sorry can't find that!" }));
 }
 
-app.listen(port, () => console.log(`Ceylon News is running on port ${port}!`));
+app.listen(port, () => {
+    console.log(`Ceylon News is running on port ${port}!`);
+    const scrapper = require("./scrapper/scrape");
+    console.log("Scrape CronJob started!.");
+    scrapper.scrapeCronJob.start();
+});
 
 // for testing
 module.exports = app; 
