@@ -6,11 +6,18 @@ const parser = new Parser();
 const storeNews = require("./storeNews");
 
 const start = async () => {
-    scrapeNews().catch(e => console.log(e));
+    try {
+        scrapeNews();
+    } catch (error) {
+        throw Error(error);
+    }
 }
 
 const scrapeNews = async () => {
-    const sources = await getSources().catch(e => console.log(e));
+    // check news table count
+    await storeNews.checkNewsCount();
+
+    const sources = await getSources();
 
     // loop through each rss feed
     sources.forEach(async (source) => {
@@ -28,10 +35,7 @@ const scrapeNews = async () => {
                 main_img: main_img
             };
 
-            storeNews.save(newsData).catch(e => {
-                console.log(e);
-            });
-
+            storeNews.save(newsData);
         });
     });
 }
@@ -43,21 +47,23 @@ const getMainImg = (post) => {
         let img = imgs[3] || imgs[2] || imgs[1];
         img = img.replace(/^http:\/\//i, 'https://');
         return img;
-    } catch (e) {
+    } catch (error) {
         return "null";
     }
 }
 
 const getSources = async () => {
-    const sources = await db.getAll("SELECT * FROM source").catch(e => console.log(e));
+    const sources = await db.getAll("SELECT * FROM source");
     return sources;
 }
 
-const scrapeCronJob = new CronJob("*/5 * * * *", () => {
-    start().catch(e => {
-        console.log(e);
-    });
-}, null, true, 'America/Los_Angeles');
+const scrapeCronJob = new CronJob("*/1 * * * *", () => {
+    try {
+        start();
+    } catch (error) {
+        console.log(error);
+    }
+}, null, true, 'Asia/Colombo');
 
 
 module.exports = {
