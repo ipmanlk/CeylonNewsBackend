@@ -12,6 +12,7 @@ const handle = (req, res) => {
                 res.json(newsPost);
             }
         }).catch(e => {
+            res.status(500).send(JSON.stringify({ "error": "Internal Server Error." }));
             console.log(e);
         });
         return;
@@ -22,6 +23,7 @@ const handle = (req, res) => {
         getNews.getNewsSources(params.lang).then(newsSources => {
             res.json(newsSources);
         }).catch(e => {
+            res.status(500).send(JSON.stringify({ "error": "Internal Server Error." }));
             console.log(e);
         });
         return;
@@ -33,6 +35,7 @@ const handle = (req, res) => {
         getNews.getNewsList(sources, params.news_id).then(newsList => {
             res.json(newsList);
         }).catch(e => {
+            res.status(500).send(JSON.stringify({ "error": "Internal Server Error." }));
             console.log(e);
         });
         return;
@@ -44,6 +47,7 @@ const handle = (req, res) => {
         getNews.getLatestId(sources).then(latestId => {
             res.json(latestId);
         }).catch(e => {
+            res.status(500).send(JSON.stringify({ "error": "Internal Server Error." }));
             console.log(e);
         });
         return;
@@ -57,6 +61,7 @@ const handle = (req, res) => {
         getNews.getNewsList(sources).then(newsList => {
             res.json(newsList);
         }).catch(e => {
+            res.status(500).send(JSON.stringify({ "error": "Internal Server Error." }));
             console.log(e);
         });
         return;
