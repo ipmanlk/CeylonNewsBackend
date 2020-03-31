@@ -1,4 +1,4 @@
-name: API-tests
+name: api-tests
 
 on: [push, pull_request]
 
