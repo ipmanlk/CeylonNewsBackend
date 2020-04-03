@@ -1,5 +1,5 @@
 const { SQLite } = require("../../libs/dmxSQLite");
-const dbPath = (process.env.NODE_ENV) ? `${__dirname}/../../db/cn.test.db` : `${__dirname}/../../db/cn.db`
+const dbPath = `${__dirname}/../../db/cn.db`
 const db = new SQLite(dbPath);
 
 const getNewsList = (sources = [], lastNewsId = false) => {
