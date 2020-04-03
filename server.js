@@ -28,8 +28,13 @@ const send404Error = (res) => {
 app.listen(port, () => {
     console.log(`Ceylon News is running on port ${port}!`);
     const scrapper = require("./scrapper/scrape");
-    console.log("Scrape CronJob started!.");
-    scrapper.scrapeCronJob.start();
+    console.log("Preparing the database.");
+    scrapper.prepareDB().then(() => {
+        console.log("Scrape CronJob started!.");
+        scrapper.scrapeCronJob.start();
+    }).catch(e => {
+        console.log(e);
+    });
 });
 
 // for testing

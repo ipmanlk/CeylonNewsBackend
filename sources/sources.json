@@ -1,0 +1,156 @@
+[
+  {
+    "name": "Gossip Lanka",
+    "desc": "",
+    "lang": "sn",
+    "feed": "https://tinyurl.com/woektkj",
+    "enabled": 0
+  },
+  {
+    "name": "BBC Sinhala",
+    "desc": "",
+    "lang": "sn",
+    "feed": "https://tinyurl.com/wlvo8td",
+    "enabled": 1
+  },
+  {
+    "name": "Hiru News",
+    "desc": "",
+    "lang": "sn",
+    "feed": "https://tinyurl.com/rcp2yz9",
+    "enabled": 1
+  },
+  {
+    "name": "Neth News",
+    "desc": "",
+    "lang": "sn",
+    "feed": "https://tinyurl.com/spyq9lx",
+    "enabled": 1
+  },
+  {
+    "name": "Divaina",
+    "desc": "",
+    "lang": "sn",
+    "feed": "https://bit.ly/2FIIgqb",
+    "enabled": 1
+  },
+  {
+    "name": "News.lk",
+    "desc": "",
+    "lang": "sn",
+    "feed": "https://tinyurl.com/y35lznud",
+    "enabled": 1
+  },
+  {
+    "name": "Mawbima",
+    "desc": "",
+    "lang": "sn",
+    "feed": "https://tinyurl.com/y6j7d2oa",
+    "enabled": 1
+  },
+  {
+    "name": "Ada",
+    "desc": "",
+    "lang": "sn",
+    "feed": "https://tinyurl.com/y5h4lxyy",
+    "enabled": 1
+  },
+  {
+    "name": "Hiru News",
+    "desc": "",
+    "lang": "en",
+    "feed": "https://tinyurl.com/r6kj83b",
+    "enabled": 1
+  },
+  {
+    "name": "News First",
+    "desc": "",
+    "lang": "en",
+    "feed": "https://www.newsfirst.lk/feed/",
+    "enabled": 1
+  },
+  {
+    "name": "Daily News",
+    "desc": "",
+    "lang": "en",
+    "feed": "http://www.dailynews.lk/rss.xml",
+    "enabled": 1
+  },
+  {
+    "name": "News.lk",
+    "desc": "",
+    "lang": "en",
+    "feed": "http://ftr.fivefilters.org/makefulltextfeed.php?url=https%3A%2F%2Fnews.lk%2Fnews%3Fformat%3Dfeed&max=3",
+    "enabled": 1
+  },
+  {
+    "name": "Gossip Lanka",
+    "desc": "",
+    "lang": "en",
+    "feed": "https://tinyurl.com/qlovo8o",
+    "enabled": 0
+  },
+  {
+    "name": "Hiru News",
+    "desc": "",
+    "lang": "tm",
+    "feed": "http://ftr.fivefilters.org/makefulltextfeed.php?url=http%3A%2F%2Fwww.hirunews.lk%2Frss%2Ftamil.xml&max=10",
+    "enabled": 1
+  },
+  {
+    "name": "JVP News",
+    "desc": "",
+    "lang": "tm",
+    "feed": "http://ftr.fivefilters.org/makefulltextfeed.php?url=https%3A%2F%2Fwww.jvpnews.com%2Frss.xml&max=10",
+    "enabled": 1
+  },
+  {
+    "name": "Tamilwin",
+    "desc": "",
+    "lang": "tm",
+    "feed": "http://ftr.fivefilters.org/makefulltextfeed.php?url=https%3A%2F%2Fwww.tamilwin.com%2Frss.xml&max=10",
+    "enabled": 1
+  },
+  {
+    "name": "BBC",
+    "desc": "",
+    "lang": "tm",
+    "feed": "http://ftr.fivefilters.org/makefulltextfeed.php?url=http%3A%2F%2Ffeeds.bbci.co.uk%2Ftamil%2Fsri_lanka%2Frss.xml&max=10",
+    "enabled": 1
+  },
+  {
+    "name": "Economy Next",
+    "desc": "",
+    "lang": "en",
+    "feed": "https://tinyurl.com/s6cxw8o",
+    "enabled": 1
+  },
+  {
+    "name": "Srilanka Mirror",
+    "desc": "",
+    "lang": "en",
+    "feed": "https://tinyurl.com/v7ag5x9",
+    "enabled": 1
+  },
+  {
+    "name": "Dinamina",
+    "desc": "",
+    "lang": "sn",
+    "feed": "https://tinyurl.com/rj4atlx",
+    "enabled": 1
+  },
+  {
+    "name": "Sunday Observer",
+    "desc": "",
+    "lang": "en",
+    "feed": "https://tinyurl.com/uzoj5dy",
+    "enabled": 1
+  },
+  {
+    "name": "BBC",
+    "desc": "",
+    "lang": "en",
+    "feed": "https://tinyurl.com/w2juyax",
+    "enabled": 1
+  }
+]

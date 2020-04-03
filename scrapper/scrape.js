@@ -13,6 +13,18 @@ const start = async () => {
     }
 }
 
+// remove news from database and insert sources to db from sources.json
+const prepareDB = async() => {
+    await db.run("DELETE FROM news");
+    await db.run("DELETE FROM source");
+    await db.run("UPDATE sqlite_sequence SET seq = 0");
+
+    const sources = require("../sources/sources.json");
+    sources.forEach(async(source) => {
+        await db.run(`INSERT INTO source(name, desc, lang, feed, enabled) VALUES (?,?,?,?,?)`, [source.name, source.desc, source.lang, source.feed, source.enabled]);
+    });
+}
+
 const scrapeNews = async () => {
     // check news table count
     await storeNews.checkNewsCount();
@@ -35,7 +47,7 @@ const scrapeNews = async () => {
                 main_img: main_img
             };
 
-            storeNews.save(newsData);
+            storeNews.save(newsData).catch(e => {});
         });
     });
 }
@@ -60,12 +72,12 @@ const getSources = async () => {
 const scrapeCronJob = new CronJob("*/1 * * * *", () => {
     try {
         start();
-    } catch (error) {
-        console.log(error);
+    } catch (e) {
+        console.log(e);
     }
 }, null, true, 'Asia/Colombo');
 
-
 module.exports = {
-    scrapeCronJob
+    scrapeCronJob,
+    prepareDB
 }
