@@ -42,13 +42,6 @@
     "enabled": 1
   },
   {
-    "name": "Mawbima",
-    "desc": "",
-    "lang": "sn",
-    "feed": "https://tinyurl.com/y6j7d2oa",
-    "enabled": 1
-  },
-  {
     "name": "Ada",
     "desc": "",
     "lang": "sn",
@@ -80,7 +73,7 @@
     "name": "News.lk",
     "desc": "",
     "lang": "en",
-    "feed": "http://ftr.fivefilters.org/makefulltextfeed.php?url=https%3A%2F%2Fnews.lk%2Fnews%3Fformat%3Dfeed&max=3",
+    "feed": "https://tinyurl.com/w28nfht",
     "enabled": 1
   },
   {
@@ -94,28 +87,28 @@
     "name": "Hiru News",
     "desc": "",
     "lang": "tm",
-    "feed": "http://ftr.fivefilters.org/makefulltextfeed.php?url=http%3A%2F%2Fwww.hirunews.lk%2Frss%2Ftamil.xml&max=10",
+    "feed": "https://tinyurl.com/ut4qb5l",
     "enabled": 1
   },
   {
     "name": "JVP News",
     "desc": "",
     "lang": "tm",
-    "feed": "http://ftr.fivefilters.org/makefulltextfeed.php?url=https%3A%2F%2Fwww.jvpnews.com%2Frss.xml&max=10",
+    "feed": "https://tinyurl.com/uws8hxb",
     "enabled": 1
   },
   {
     "name": "Tamilwin",
     "desc": "",
     "lang": "tm",
-    "feed": "http://ftr.fivefilters.org/makefulltextfeed.php?url=https%3A%2F%2Fwww.tamilwin.com%2Frss.xml&max=10",
+    "feed": "https://tinyurl.com/ulugr2w",
     "enabled": 1
   },
   {
     "name": "BBC",
     "desc": "",
     "lang": "tm",
-    "feed": "http://ftr.fivefilters.org/makefulltextfeed.php?url=http%3A%2F%2Ffeeds.bbci.co.uk%2Ftamil%2Fsri_lanka%2Frss.xml&max=10",
+    "feed": "https://tinyurl.com/vjh89nj",
     "enabled": 1
   },
   {
