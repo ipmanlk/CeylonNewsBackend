@@ -1,4 +1,4 @@
-name: dockerhub-push
+name: test-push
 
 on:
   push:
