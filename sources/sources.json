@@ -145,5 +145,26 @@
     "lang": "en",
     "feed": "https://tinyurl.com/w2juyax",
     "enabled": 1
+  },
+  {
+    "name": "Lanka Puvath",
+    "desc": "",
+    "lang": "sn",
+    "feed": "https://tinyurl.com/txz9gtp",
+    "enabled": 1
+  },
+  {
+    "name": "Maw Rata",
+    "desc": "",
+    "lang": "sn",
+    "feed": "https://tinyurl.com/r3tkbnd",
+    "enabled": 1
+  },
+  {
+    "name": "Colombo Page",
+    "desc": "",
+    "lang": "en",
+    "feed": "https://tinyurl.com/upttpum",
+    "enabled": 1
   }
 ]
