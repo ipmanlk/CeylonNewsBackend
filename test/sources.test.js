@@ -3,7 +3,7 @@ const parser = new Parser();
 const sources = require("../sources/sources.json");
 
 // settings for jest
-jest.setTimeout(60000);
+jest.setTimeout(120000);
 
 // Test all RSS feeds
 for (let source of sources) {
