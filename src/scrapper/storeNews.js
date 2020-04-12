@@ -1,7 +1,7 @@
 const { SQLite } = require("../libs/dmxSQLite");
 const cheerio = require('cheerio');
 const moment = require('moment-timezone');
-const db = new SQLite(`${__dirname}/../db/cn.db`);
+const db = new SQLite(`${__dirname}/../../db/cn.db`);
 
 const save = async (newsData) => {
     let news = clean(newsData);

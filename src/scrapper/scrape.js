@@ -1,7 +1,7 @@
 const { SQLite } = require("../libs/dmxSQLite");
 const CronJob = require('cron').CronJob;
 const Parser = require('rss-parser');
-const db = new SQLite(`${__dirname}/../db/cn.db`);
+const db = new SQLite(`${__dirname}/../../db/cn.db`);
 const parser = new Parser();
 const storeNews = require("./storeNews");
 
