@@ -1,6 +1,6 @@
 const Parser = require("rss-parser");
 const parser = new Parser();
-const sources = require("../sources/sources.json");
+const sources = require("../src/sources/sources.json");
 
 // settings for jest
 jest.setTimeout(180000);
