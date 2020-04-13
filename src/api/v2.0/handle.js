@@ -19,7 +19,7 @@ const handle = (req, res) => {
 
     // retrieve single news post
     if (action == "news-post") {
-        getNews.getNewsPost(req.query.news_id).then(newsPost => {
+        newsData.getNewsPost(req.query.news_id).then(newsPost => {
             if (newsPost == undefined) {
                 res.status(404).send(JSON.stringify({ "error": "Unable to locate that post." }));
             } else {

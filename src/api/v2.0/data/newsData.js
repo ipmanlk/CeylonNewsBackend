@@ -24,5 +24,6 @@ const getNewsSources = (lang) => {
 
 module.exports = {
     getNewsList,
-    getNewsSources
+    getNewsSources,
+    getNewsPost
 }
