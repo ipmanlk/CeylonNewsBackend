@@ -13,17 +13,14 @@ app.get('/:version', (req, res) => {
         const api = require(`./api/${req.params.version}/handle.js`);
         api.handle(req, res);
     } catch (error) {
-        send404Error(res);
+        console.log(error);
+        res.status(500).json({ "error": "Internal Server Error." });
     }
 });
 
 app.use((req, res, next) => {
-    send404Error(res);
+    res.status(404).json({ "error": "Sorry can't find that!" });
 });
-
-const send404Error = (res) => {
-    res.status(404).send(JSON.stringify({ "error": "Sorry can't find that!" }));
-}
 
 app.listen(port, () => {
     console.log(`Ceylon News is running on port ${port}!`);
