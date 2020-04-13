@@ -12,7 +12,7 @@ const handle = (req, res) => {
             res.json(data);
         }).catch(e => {
             console.log(e);
-            res.status(500).send(JSON.stringify({ "error": "Internal Server Error." }));
+            res.status(500).json({ "error": "Internal Server Error." });
         });
         return;
     }
@@ -21,13 +21,13 @@ const handle = (req, res) => {
     if (action == "news-post") {
         newsData.getNewsPost(req.query.news_id).then(newsPost => {
             if (newsPost == undefined) {
-                res.status(404).send(JSON.stringify({ "error": "Unable to locate that post." }));
+                res.status(404).json({ "error": "Unable to locate that post." });
             } else {
                 res.json(newsPost);
             }
         }).catch(e => {
             console.log(e);
-            res.status(500).send(JSON.stringify({ "error": "Internal Server Error." }));
+            res.status(500).json({ "error": "Internal Server Error." });
         });
         return;
     }
@@ -38,13 +38,13 @@ const handle = (req, res) => {
             res.json(newsSources);
         }).catch(e => {
             console.log(e);
-            res.status(500).send(JSON.stringify({ "error": "Internal Server Error." }));
+            res.status(500).json({ "error": "Internal Server Error." });
         });
         return;
     }
 
     // default response
-    res.status(404).send(JSON.stringify({ "error": "Sorry can't find that!" }));
+    res.status(404).json({ "error": "Sorry can't find that!" });
 
 }
 
