@@ -33,7 +33,7 @@ const handle = (req, res) => {
     }
 
     // retrieve news sources list
-    if (action == "sources-list" && req.query.lang) {
+    if (action == "news-sources" && req.query.lang) {
         newsData.getNewsSources(req.query.lang).then(newsSources => {
             res.json(newsSources);
         }).catch(e => {
