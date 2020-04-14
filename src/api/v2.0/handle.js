@@ -1,4 +1,4 @@
-const tokens = require("../auth/v2.0/tokens..json");
+const tokens = require("../auth/v2.0/tokens.json");
 const newsData = require("./data/newsData");
 
 const handle = (req, res) => {
