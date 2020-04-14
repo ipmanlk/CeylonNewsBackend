@@ -1,6 +1,14 @@
+const tokens = require("../auth/v2.0/tokens..json");
 const newsData = require("./data/newsData");
 
 const handle = (req, res) => {
+    // check authentication
+    const token = req.headers.token;
+    if (tokens.indexOf(token) == -1) {
+        res.status(401).json({"error": "You are not authorized."})
+        return;
+    }
+
     const action = req.query.action;
 
     // search & navigate news list 
