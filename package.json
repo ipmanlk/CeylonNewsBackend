@@ -13,7 +13,6 @@
     "cheerio": "^1.0.0-rc.3",
     "cron": "^1.8.2",
     "express": "^4.17.1",
-    "express-status-monitor": "git+https://github.com/RafalWilinski/express-status-monitor.git",
     "moment-timezone": "^0.5.28",
     "rss-parser": "^3.7.6",
     "sqlite3": "^4.1.1"

@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require('express');
 const app = express();
 const port = 3000;
 
@@ -8,9 +8,7 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.use(require("express-status-monitor")());
-
-app.get("/:version", (req, res) => {
+app.get('/:version', (req, res) => {
     try {
         const api = require(`./api/${req.params.version}/handle.js`);
         api.handle(req, res);
