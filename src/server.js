@@ -1,6 +1,17 @@
+// load env vars
+require("dotenv").config()
+
+const { stMonitor, stHttpLoggerMiddleware } = require("sematext-agent-express");
+
+// Start monitoring metrics
+stMonitor.start();
+
 const express = require("express");
 const app = express();
 const port = 3000;
+
+// Middleware for logging
+app.use(stHttpLoggerMiddleware);
 
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");

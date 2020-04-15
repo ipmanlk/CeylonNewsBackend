@@ -117,3 +117,6 @@ dist
 # auth info
 auth/
 src/api/auth/
+
+# sematext.com
+spmdb/
