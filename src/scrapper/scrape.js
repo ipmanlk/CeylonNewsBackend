@@ -21,7 +21,7 @@ const prepareDB = async() => {
 
     const sources = require("../sources/sources.json");
     sources.forEach(async(source) => {
-        await db.run(`INSERT INTO source(name, desc, lang, feed, enabled) VALUES (?,?,?,?,?)`, [source.name, source.desc, source.lang, source.feed, source.enabled]);
+        await db.run(`INSERT INTO source(id, name, desc, lang, feed, enabled) VALUES (?,?,?,?,?,?)`, [source.id, source.name, source.desc, source.lang, source.feed, source.enabled]);
     });
 }
 

@@ -1,5 +1,6 @@
 [
   {
+    "id": 1,
     "name": "Gossip Lanka",
     "desc": "",
     "lang": "sn",
@@ -7,6 +8,7 @@
     "enabled": 0
   },
   {
+    "id": 2,
     "name": "BBC Sinhala",
     "desc": "",
     "lang": "sn",
@@ -14,6 +16,7 @@
     "enabled": 1
   },
   {
+    "id": 3,
     "name": "Hiru News",
     "desc": "",
     "lang": "sn",
@@ -21,6 +24,7 @@
     "enabled": 1
   },
   {
+    "id": 4,
     "name": "Neth News",
     "desc": "",
     "lang": "sn",
@@ -28,6 +32,7 @@
     "enabled": 1
   },
   {
+    "id": 5,
     "name": "Divaina",
     "desc": "",
     "lang": "sn",
@@ -35,6 +40,7 @@
     "enabled": 1
   },
   {
+    "id": 6,
     "name": "News.lk",
     "desc": "",
     "lang": "sn",
@@ -42,6 +48,7 @@
     "enabled": 1
   },
   {
+    "id": 7,
     "name": "Ada",
     "desc": "",
     "lang": "sn",
@@ -49,6 +56,7 @@
     "enabled": 1
   },
   {
+    "id": 8,
     "name": "Hiru News",
     "desc": "",
     "lang": "en",
@@ -56,6 +64,7 @@
     "enabled": 1
   },
   {
+    "id": 9,
     "name": "News First",
     "desc": "",
     "lang": "en",
@@ -63,6 +72,7 @@
     "enabled": 1
   },
   {
+    "id": 10,
     "name": "Daily News",
     "desc": "",
     "lang": "en",
@@ -70,6 +80,7 @@
     "enabled": 1
   },
   {
+    "id": 11,
     "name": "News.lk",
     "desc": "",
     "lang": "en",
@@ -77,6 +88,7 @@
     "enabled": 1
   },
   {
+    "id": 12,
     "name": "Gossip Lanka",
     "desc": "",
     "lang": "en",
@@ -84,6 +96,7 @@
     "enabled": 0
   },
   {
+    "id": 13,
     "name": "Hiru News",
     "desc": "",
     "lang": "tm",
@@ -91,6 +104,7 @@
     "enabled": 1
   },
   {
+    "id": 14,
     "name": "JVP News",
     "desc": "",
     "lang": "tm",
@@ -98,6 +112,7 @@
     "enabled": 1
   },
   {
+    "id": 15,
     "name": "Tamilwin",
     "desc": "",
     "lang": "tm",
@@ -105,6 +120,7 @@
     "enabled": 1
   },
   {
+    "id": 16,
     "name": "BBC",
     "desc": "",
     "lang": "tm",
@@ -112,6 +128,7 @@
     "enabled": 1
   },
   {
+    "id": 17,
     "name": "Economy Next",
     "desc": "",
     "lang": "en",
@@ -119,6 +136,7 @@
     "enabled": 1
   },
   {
+    "id": 18,
     "name": "Srilanka Mirror",
     "desc": "",
     "lang": "en",
@@ -126,6 +144,7 @@
     "enabled": 1
   },
   {
+    "id": 19,
     "name": "Dinamina",
     "desc": "",
     "lang": "sn",
@@ -133,6 +152,7 @@
     "enabled": 1
   },
   {
+    "id": 20,
     "name": "Sunday Observer",
     "desc": "",
     "lang": "en",
@@ -140,6 +160,7 @@
     "enabled": 1
   },
   {
+    "id": 21,
     "name": "BBC",
     "desc": "",
     "lang": "en",
@@ -147,6 +168,7 @@
     "enabled": 1
   },
   {
+    "id": 22,
     "name": "Lanka Puvath",
     "desc": "",
     "lang": "sn",
@@ -154,13 +176,15 @@
     "enabled": 1
   },
   {
+    "id": 23,
     "name": "Maw Rata",
     "desc": "",
     "lang": "sn",
     "feed": "https://tinyurl.com/r3tkbnd",
-    "enabled": 1
+    "enabled": 0
   },
   {
+    "id": 24,
     "name": "Colombo Page",
     "desc": "",
     "lang": "en",
