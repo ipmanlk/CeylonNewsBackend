@@ -16,10 +16,10 @@
     "express": "^4.17.1",
     "moment-timezone": "^0.5.28",
     "rss-parser": "^3.7.6",
-    "sematext-agent-express": "^1.0.7",
+    "sematext-agent-express": "^2.0.0",
     "sqlite3": "^4.1.1"
   },
   "devDependencies": {
-    "jest": "^25.2.7"
+    "jest": "^25.4.0"
   }
 }
