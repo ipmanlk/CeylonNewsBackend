@@ -1,4 +1,4 @@
-name: "Publish to DockerHub"
+name: "Publish to DockerHub & Deploy"
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
       env:
         CI: true
 
-  build-push:
+  dockerhub-publish:
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -33,3 +33,16 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: ipmanlk/ceylonnews
           tags: latest
+
+  deploy:
+    needs: dockerhub-publish
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploying the updated backend
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.SSH_KEY_PASS }}
+        script: bash commands/ceylonnews/update_ceylonnews
