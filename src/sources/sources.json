@@ -17,10 +17,10 @@
   },
   {
     "id": 3,
-    "name": "Hiru News",
+    "name": "Tharunaya News",
     "desc": "",
     "lang": "sn",
-    "feed": "https://tinyurl.com/y96ymg37",
+    "feed": "https://tinyurl.com/ycg68jhz",
     "enabled": 1
   },
   {
@@ -53,15 +53,15 @@
     "desc": "",
     "lang": "sn",
     "feed": "https://tinyurl.com/y5h4lxyy",
-    "enabled": 1
+    "enabled": 0
   },
   {
     "id": 8,
-    "name": "Hiru News",
+    "name": "Hiru News (Offline)",
     "desc": "",
     "lang": "en",
-    "feed": "https://tinyurl.com/yd98o4hl",
-    "enabled": 1
+    "feed": "https://tinyurl.com/r6kj83b",
+    "enabled": 0
   },
   {
     "id": 9,
@@ -97,11 +97,11 @@
   },
   {
     "id": 13,
-    "name": "Hiru News",
+    "name": "Hiru News (Offline)",
     "desc": "",
     "lang": "tm",
-    "feed": "https://tinyurl.com/yaatjlmh",
-    "enabled": 1
+    "feed": "https://tinyurl.com/ut4qb5l",
+    "enabled": 0
   },
   {
     "id": 14,
