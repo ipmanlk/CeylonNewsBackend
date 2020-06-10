@@ -7,6 +7,7 @@ jest.setTimeout(180000);
 
 // Test all RSS feeds
 for (let source of sources) {
+    if (!source.enabled) continue;
     test(`RSS Feed: ${source.name} (${source.lang})`, async () => {
         console.log(`Testing ${source.name} (${source.lang})`);
         const feed = await parser.parseURL(source.feed);
