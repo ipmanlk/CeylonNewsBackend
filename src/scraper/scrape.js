@@ -22,7 +22,7 @@ const prepareDB = async () => {
 
 
     sources.forEach(async (source) => {
-        await db.run(`INSERT INTO source(id, name, desc, lang, feed, enabled) VALUES (?,?,?,?,?,?)`, [source.id, source.name, source.desc, source.lang, source.feed, source.enabled]);
+        await db.run(`INSERT INTO source(id, name, desc, lang, feed, enabled) VALUES (?,?,?,?,?,?)`, [source.id, source.name, source.desc, source.lang, source.feed || null, source.enabled]);
     });
 }
 
