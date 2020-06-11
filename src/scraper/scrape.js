@@ -26,7 +26,7 @@ const prepareDB = async () => {
     });
 }
 
-const scrapeNews = async() => {
+const scrapeNews = async () => {
     // check news table count
     await storeNews.checkNewsCount();
 
@@ -60,16 +60,12 @@ const scrapeFeeds = async (feeds) => {
 }
 
 const scrapeSites = async (sites) => {
-    const posts = [];
     sites.forEach(async (siteData) => {
         const scraper = require(`${__dirname}/sites/${siteData.scraper}.js`);
         const sitePosts = await scraper.scrape(siteData);
-        posts.push(sitePosts);
-    });
-
-    // save posts from news sites
-    posts.forEach(post => {
-        storeNews.save(post).catch(e => { });
+        sitePosts.forEach(post => {
+            storeNews.save(post).catch(e => { });
+        });
     });
 }
 
