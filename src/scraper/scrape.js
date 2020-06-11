@@ -4,6 +4,7 @@ const Parser = require('rss-parser');
 const db = new SQLite(`${__dirname}/../../db/cn.db`);
 const parser = new Parser();
 const storeNews = require("./storeNews");
+const sources = require("../sources/sources.json");
 
 const start = async () => {
     try {
@@ -14,25 +15,31 @@ const start = async () => {
 }
 
 // remove news from database and insert sources to db from sources.json
-const prepareDB = async() => {
+const prepareDB = async () => {
     await db.run("DELETE FROM news");
     await db.run("DELETE FROM source");
     await db.run("UPDATE sqlite_sequence SET seq = 0");
 
-    const sources = require("../sources/sources.json");
-    sources.forEach(async(source) => {
+
+    sources.forEach(async (source) => {
         await db.run(`INSERT INTO source(id, name, desc, lang, feed, enabled) VALUES (?,?,?,?,?,?)`, [source.id, source.name, source.desc, source.lang, source.feed, source.enabled]);
     });
 }
 
-const scrapeNews = async () => {
+const scrapeNews = async() => {
     // check news table count
     await storeNews.checkNewsCount();
 
-    const sources = await getSources();
+    const sites = sources.filter(source => source.site);
+    const rssFeeds = sources.filter(source => source.feed);
 
+    scrapeFeeds(rssFeeds);
+    scrapeSites(sites);
+}
+
+const scrapeFeeds = async (feeds) => {
     // loop through each rss feed
-    sources.forEach(async (source) => {
+    feeds.forEach(async (source) => {
         const feed = await parser.parseURL(source.feed);
 
         // loop through posts in each rss feed
@@ -47,8 +54,22 @@ const scrapeNews = async () => {
                 main_img: main_img
             };
 
-            storeNews.save(newsData).catch(e => {});
+            storeNews.save(newsData).catch(e => { });
         });
+    });
+}
+
+const scrapeSites = async (sites) => {
+    const posts = [];
+    sites.forEach(async (siteData) => {
+        const scraper = require(`${__dirname}/sites/${siteData.scraper}.js`);
+        const sitePosts = await scraper.scrape(siteData);
+        posts.push(sitePosts);
+    });
+
+    // save posts from news sites
+    posts.forEach(post => {
+        storeNews.save(post).catch(e => { });
     });
 }
 

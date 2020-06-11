@@ -23,11 +23,11 @@ app.use((req, res, next) => {
 
 app.listen(port, () => {
     console.log(`Ceylon News is running on port ${port}!`);
-    const scrapper = require("./scrapper/scrape");
+    const scraper = require("./scraper/scrape");
     console.log("Preparing the database.");
-    scrapper.prepareDB().then(() => {
+    scraper.prepareDB().then(() => {
         console.log("Scrape CronJob started!.");
-        scrapper.scrapeCronJob.start();
+        scraper.scrapeCronJob.start();
     }).catch(e => {
         console.log(e);
     });
