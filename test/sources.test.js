@@ -8,6 +8,16 @@ jest.setTimeout(180000);
 // Test all RSS feeds
 for (let source of sources) {
     if (!source.enabled) continue;
+
+    if (source.site) {
+        test(`RSS Feed: ${source.name} (${source.lang})`, async () => {
+            console.log(`Testing scraper ${source.name} (${source.lang})`);
+            const scraper = require(`${__dirname}/../src/scraper/sites/${source.scraper}.js`);
+            const posts = await scraper.scrape(source);
+            expect(posts.length).not.toBe(0);
+        });
+        continue;
+    }
     test(`RSS Feed: ${source.name} (${source.lang})`, async () => {
         console.log(`Testing ${source.name} (${source.lang})`);
         const feed = await parser.parseURL(source.feed);
@@ -22,7 +32,7 @@ test("check for duplicate sources", () => {
     });
 
     const feeds = sources.map(source => {
-        return source.feed;
+        return source.feed || source.site;
     });
 
     const duplicates = hasDuplicates(namesAndLangs) || hasDuplicates(feeds);
