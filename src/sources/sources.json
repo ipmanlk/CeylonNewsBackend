@@ -190,5 +190,14 @@
     "lang": "en",
     "feed": "https://tinyurl.com/upttpum",
     "enabled": 1
+  },
+  {
+    "id": 25,
+    "scraper": "hirunews-sn",
+    "name": "Hiru News",
+    "desc": "",
+    "lang": "sn",
+    "site": "https://www.hirunews.lk/local-news.php",
+    "enabled": 1
   }
 ]
