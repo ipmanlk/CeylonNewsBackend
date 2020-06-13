@@ -29,6 +29,7 @@ const scrape = async (siteData) => {
         const $post = cheerio.load(postHtml);
         $post("#idc-container-parent").remove();
         $post("script").remove();
+        $post("hr").remove();
         const postContent = $post(".main-article-section").html();
         p["post"] = postContent;
         p["main_img"] = getMainImg(postContent);
