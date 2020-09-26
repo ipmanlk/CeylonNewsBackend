@@ -86,7 +86,7 @@ const getSources = async () => {
     return sources;
 }
 
-const scrapeCronJob = new CronJob("*/1 * * * *", () => {
+const scrapeCronJob = new CronJob("*/10 * * * *", () => {
     try {
         start();
     } catch (e) {
