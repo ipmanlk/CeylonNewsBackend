@@ -11,11 +11,12 @@
   "license": "ISC",
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
+    "cors": "^2.8.5",
     "cron": "^1.8.2",
     "express": "^4.17.1",
     "moment-timezone": "^0.5.31",
-    "node-fetch": "^2.6.0",
-    "rss-parser": "^3.8.0",
+    "node-fetch": "^2.6.1",
+    "rss-parser": "^3.9.0",
     "sqlite3": "^4.2.0",
     "utf8": "^3.0.0"
   },
