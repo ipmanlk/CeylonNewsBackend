@@ -49,7 +49,7 @@ const escapedHtmlFix = (text) => {
 const checkNewsCount = async () => {
     const row = await db.getOne("SELECT COUNT(id) as count FROM news");
     // empty news table if there are too many news
-    if (row.count > 10000) {
+    if (row.count > 100000) {
         await db.run("DELETE FROM news");
     }
 }
