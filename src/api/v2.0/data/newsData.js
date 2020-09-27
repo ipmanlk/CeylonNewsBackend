@@ -13,7 +13,7 @@ const getNewsList = (sources = [], keyword = "", skip = 0) => {
 }
 
 const getNewsPost = (newsId) => {
-    let sql = `SELECT post, link FROM news WHERE id = ${newsId}`;
+    let sql = `SELECT n.title, n.time, n.main_img, n.post, s.name as source_name, n.link FROM news n, source s WHERE n.id = ${newsId} AND n.source_id = s.id`;
     return db.getOne(sql);
 }
 
