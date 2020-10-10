@@ -2,7 +2,7 @@ const fetch = require("node-fetch");
 const cheerio = require("cheerio");
 
 const scrape = async (siteData) => {
-  console.log("adaderana-sn scraper is running");
+  console.log("adaderana-sn scraper: started");
 
   const response = await fetch(siteData.site);
   const html = await response.text();
@@ -42,6 +42,7 @@ const scrape = async (siteData) => {
     p["main_img"] = getMainImg($post.html());
   }
 
+  console.log("adaderana-sn scraper: stopped");
   return posts;
 }
 
