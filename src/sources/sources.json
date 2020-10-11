@@ -199,14 +199,5 @@
     "lang": "sn",
     "site": "https://www.hirunews.lk/local-news.php",
     "enabled": 1
-  },
-  {
-    "id": 26,
-    "scraper": "adaderana-sn",
-    "name": "Ada Derana",
-    "desc": "",
-    "lang": "sn",
-    "site": "https://tinyurl.com/y5vtjn2r",
-    "enabled": 1
   }
 ]
