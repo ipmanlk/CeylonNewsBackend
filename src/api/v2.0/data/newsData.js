@@ -7,7 +7,7 @@ const getNewsList = (sources = [], keyword = "", skip = 0) => {
     const sourcesStr = "'" + sources.toString().replace(/\,/g, "','") + "'";
 
     // prepare query to search db
-    const sql = `SELECT n.id, n.title, n.time, n.main_img, s.name as source FROM news n,source s WHERE n.source_id IN (${sourcesStr}) AND s.id = n.source_id AND n.title LIKE '%${keyword}%' OR n.time LIKE '${keyword}' ORDER BY n.id DESC LIMIT ${skip}, 20;`
+    const sql = `SELECT n.id, n.title, n.time, n.main_img, n.link, s.name as source FROM news n,source s WHERE n.source_id IN (${sourcesStr}) AND s.id = n.source_id AND n.title LIKE '%${keyword}%' OR n.time LIKE '${keyword}' ORDER BY n.id DESC LIMIT ${skip}, 20;`
 
     return db.getAll(sql);
 }
