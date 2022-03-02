@@ -1,26 +1,41 @@
 {
-  "name": "ceylon-news",
-  "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
-  "scripts": {
-    "test": "jest test/*",
-    "start": "node src/server.js"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "cheerio": "^1.0.0-rc.6",
-    "cors": "^2.8.5",
-    "cron": "^1.8.2",
-    "express": "^4.17.1",
-    "moment-timezone": "^0.5.33",
-    "node-fetch": "^2.6.1",
-    "rss-parser": "^3.12.0",
-    "sqlite3": "^5.0.2",
-    "utf8": "^3.0.0"
-  },
-  "devDependencies": {
-    "jest": "^25.5.4"
-  }
+	"name": "the-polari-project",
+	"version": "1.0.0",
+	"type": "module",
+	"scripts": {
+		"start": "env NODE_NO_WARNINGS=1 node --experimental-specifier-resolution=node --loader ts-node/esm src/app.ts",
+		"build": "tsc",
+		"ts-node": "node --experimental-specifier-resolution=node --loader ts-node/esm",
+		"ready": "npx prisma generate && npx prisma migrate dev",
+		"prisma-generate": "npx prisma generate",
+		"prisma-migrate": "npx prisma migrate dev",
+		"test": "env NODE_NO_WARNINGS=1 env DEVELOPMENT=1 mocha -r ts-node/register 'tests/*.test.ts'"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"devDependencies": {
+		"@types/chai": "^4.3.0",
+		"@types/cors": "^2.8.12",
+		"@types/express": "^4.17.13",
+		"@types/luxon": "^2.0.9",
+		"@types/mocha": "^9.1.0",
+		"@types/node": "^17.0.21",
+		"chai": "^4.3.6",
+		"mocha": "^9.2.1",
+		"prisma": "^3.10.0",
+		"typescript": "^4.5.5"
+	},
+	"dependencies": {
+		"@prisma/client": "^3.10.0",
+		"article-parser": "^6.0.0-rc4",
+		"axios": "^0.26.0",
+		"cheerio": "^1.0.0-rc.10",
+		"cors": "^2.8.5",
+		"dotenv": "^16.0.0",
+		"express": "^4.17.3",
+		"fast-xml-parser": "^4.0.3",
+		"luxon": "^2.3.1",
+		"ts-node": "^10.5.0"
+	}
 }
