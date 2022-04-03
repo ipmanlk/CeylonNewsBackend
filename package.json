@@ -1,11 +1,10 @@
 {
-	"name": "the-polari-project",
+	"name": "ceylon-news-backend",
 	"version": "1.0.0",
 	"type": "module",
 	"scripts": {
-		"start": "env NODE_NO_WARNINGS=1 node --experimental-specifier-resolution=node --loader ts-node/esm src/app.ts",
+		"start": "tsc && node dist/app.js",
 		"build": "tsc",
-		"ts-node": "node --experimental-specifier-resolution=node --loader ts-node/esm",
 		"ready": "npx prisma generate && npx prisma migrate dev",
 		"prisma-generate": "npx prisma generate",
 		"prisma-migrate": "npx prisma migrate dev",
@@ -28,7 +27,7 @@
 	},
 	"dependencies": {
 		"@prisma/client": "^3.10.0",
-		"article-parser": "^6.0.0-rc4",
+		"article-parser": "^6.0.0-rc10",
 		"axios": "^0.26.0",
 		"cheerio": "^1.0.0-rc.10",
 		"cors": "^2.8.5",

@@ -1,5 +1,5 @@
 import { Request } from "express";
-import { sources } from "../../../sources";
+import { sources } from "../../../sources.js";
 import { Language } from "../../../types/main";
 
 export function validate(req: Request) {

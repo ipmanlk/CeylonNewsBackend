@@ -1,7 +1,7 @@
 import { Post } from "@prisma/client";
 import { Request, Response } from "express";
-import { getPrismaClient } from "../../../services/database.service";
-import { validate } from "../validators/get-posts.validator";
+import { getPrismaClient } from "../../../services/database.service.js";
+import { validate } from "../validators/get-posts.validator.js";
 
 const prisma = getPrismaClient();
 

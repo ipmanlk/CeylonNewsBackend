@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { getPrismaClient } from "../../../services/database.service";
-import { validate } from "../validators/get-post.validator";
+import { getPrismaClient } from "../../../services/database.service.js";
+import { validate } from "../validators/get-post.validator.js";
 
 const prisma = getPrismaClient();
 

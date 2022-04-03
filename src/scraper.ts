@@ -1,5 +1,5 @@
-import { getPrismaClient } from "./services/database.service";
-import { sources } from "./sources";
+import { getPrismaClient } from "./services/database.service.js";
+import { sources } from "./sources.js";
 import { Post, Provider } from "./types/main";
 
 const prisma = getPrismaClient();
@@ -15,7 +15,7 @@ async function scrapeSources() {
 	for (const source of sources) {
 		try {
 			console.log(`scraping: ${source.name}-${source.language}`);
-			const provider: Provider = await import(`./providers/${source.provider}`);
+			const provider: Provider = await import(`./providers/${source.provider}.js`);
 			const sourcePosts = await provider.scrape(source);
 			posts = posts.concat(sourcePosts);
 			await Promise.all(

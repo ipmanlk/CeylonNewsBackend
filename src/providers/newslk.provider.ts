@@ -59,7 +59,8 @@ export async function scrape(source: Source) {
 		}
 
 		return posts;
-	} catch {
+	} catch (e) {
+		console.error(e);
 		return [];
 	}
 }

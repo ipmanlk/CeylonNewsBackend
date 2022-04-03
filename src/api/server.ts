@@ -1,7 +1,7 @@
 import express from "express";
-import { getPost } from "./v1.0/handlers/get-post.handler";
-import { getPosts } from "./v1.0/handlers/get-posts.handler";
-import { getSources } from "./v1.0/handlers/get-sources.handler";
+import { getPost } from "./v1.0/handlers/get-post.handler.js";
+import { getPosts } from "./v1.0/handlers/get-posts.handler.js";
+import { getSources } from "./v1.0/handlers/get-sources.handler.js";
 import cors from "cors";
 
 export async function startAPI() {
