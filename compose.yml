@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: cn-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    mem_limit: 200m
