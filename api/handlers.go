@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-//TODO: Configure CORS properly
+// TODO: Configure CORS properly
 func HandleGetSources(w http.ResponseWriter, r *http.Request) {
 	langs, err := validateGetSources(r)
 	if err != nil {
@@ -51,7 +51,7 @@ func HandleGetNews(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	items, er := sqldb.SearchItemsByLangSources(data.Langs, data.Sources, data.Query, data.Page, data.PageSize)
+	items, er := sqldb.SearchItems(data.Langs, data.Sources, data.Query, data.Cursor, data.PageSize)
 	if er != nil {
 		log.Printf("Error getting data: %v", er)
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
@@ -80,7 +80,7 @@ func HandleGetNewsItem(w http.ResponseWriter, r *http.Request) {
 	item, er := sqldb.GetItemByID(id)
 
 	if er != nil {
-				log.Printf("Error getting data: %v", er)
+		log.Printf("Error getting data: %v", er)
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
 		return
 	}

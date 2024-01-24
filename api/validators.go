@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+var defaultCursor = common.CreateCursor(0, common.PaginationDirectionNext)
+
 func validateGetSources(r *http.Request) ([]common.Lang, *common.Err) {
 	if r.Method != "GET" {
 		return nil, common.ErrInvalidRequestMethod
@@ -33,6 +35,13 @@ func validateHandleGetNews(r *http.Request) (*getNewsData, *common.Err) {
 		return nil, common.ErrInvalidRequestMethod
 	}
 
+	cursor := r.URL.Query().Get("cursor")
+	if cursor == "" {
+		cursor = defaultCursor
+	}
+
+	query := r.URL.Query().Get("query")
+
 	langs, err := getLangs(r.URL.Query().Get("languages"))
 	if err != nil {
 		return nil, err
@@ -43,27 +52,10 @@ func validateHandleGetNews(r *http.Request) (*getNewsData, *common.Err) {
 		return nil, err
 	}
 
-	// search keyword/query
-	query := r.URL.Query().Get("query")
-
 	// get pagination data
-	pageStr := r.URL.Query().Get("page")
 	pageSizeStr := r.URL.Query().Get("pageSize")
 
-	page := 1
 	pageSize := 20
-
-	if pageStr != "" {
-		p, err := strconv.Atoi(pageStr)
-		if err != nil {
-			return nil, &common.Err{
-				Code:    400,
-				Message: "invalid page query string parameter",
-			}
-		}
-		page = p
-	}
-
 	if pageSizeStr != "" {
 		ps, err := strconv.Atoi(pageSizeStr)
 		if err != nil {
@@ -83,34 +75,12 @@ func validateHandleGetNews(r *http.Request) (*getNewsData, *common.Err) {
 		pageSize = ps
 	}
 
-	// Start: Compatibility with old API
-	// Source: https://github.com/ipmanlk/CeylonNewsBackend/blob/rewrite/src/api/v1.0/validators/get-posts.validator.ts
-	skipStr := r.URL.Query().Get("skip")
-	if skipStr != "" {
-		skip, err := strconv.Atoi(skipStr)
-		if err != nil {
-			return nil, &common.Err{
-				Code:    400,
-				Message: "invalid skip query string parameter",
-			}
-		}
-		// limit will always be 20 in the old api
-		// calculate page from the provided skip
-		page = skip/20 + 1
-	}
-
-	keyword := r.URL.Query().Get("keyword")
-	if keyword != "" {
-		query = keyword
-	}
-	// End: Compatibility with old API
-
 	return &getNewsData{
 		Langs:    langs,
 		Sources:  sources,
-		Page:     page,
-		PageSize: pageSize,
 		Query:    query,
+		PageSize: pageSize,
+		Cursor:   cursor,
 	}, nil
 }
 
@@ -141,7 +111,7 @@ func validateHandleGetNewsItem(r *http.Request) (uint, *common.Err) {
 
 func getSources(sourcesStr string, langs []common.Lang) ([]string, *common.Err) {
 	if sourcesStr == "" {
-		return providers.ActiveProviderNames, nil
+		return []string{}, nil
 	}
 
 	sourceStrs := strings.Split(sourcesStr, ",")
@@ -172,19 +142,12 @@ func getSources(sourcesStr string, langs []common.Lang) ([]string, *common.Err) 
 		}
 	}
 
-	if len(sources) == 0 {
-		return nil, &common.Err{
-			Code:    400,
-			Message: "no valid sources",
-		}
-	}
-
 	return sources, nil
 }
 
 func getLangs(langsStr string) ([]common.Lang, *common.Err) {
 	if langsStr == "" {
-		return providers.ActiveLangs, nil
+		return []common.Lang{}, nil
 	}
 
 	langStrs := strings.Split(langsStr, ",")

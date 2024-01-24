@@ -3,6 +3,7 @@ package sqldb
 import (
 	"errors"
 	"ipmanlk/cnapi/common"
+	"ipmanlk/cnapi/providers"
 	"os"
 
 	"gorm.io/driver/mysql"
@@ -22,7 +23,7 @@ func InitDB() error {
 
 	var err error
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
-		 Logger: logger.Default.LogMode(logger.Error),
+		Logger: logger.Default.LogMode(logger.Error),
 	})
 
 	if err != nil {
@@ -72,29 +73,28 @@ func InsertItem(item common.NewsItem) error {
 }
 
 // PlanetScale has issues with this.
-// 
-// func InsertItems(items []common.NewsItem) error {
-// 	tx := db.Begin()
-// 	for _, item := range items {
-// 		// Use InsertIgnore to skip duplicate entry errors
-// 		if err := tx.Clauses(clause.Insert{Modifier: "IGNORE"}).Create(&item).Error; err != nil {
-// 			// Other errors, rollback the transaction and return the error
-// 			tx.Rollback()
-// 			return err
-// 		}
-// 	}
-// 	return tx.Commit().Error
-// }
-// 
+//
+//	func InsertItems(items []common.NewsItem) error {
+//		tx := db.Begin()
+//		for _, item := range items {
+//			// Use InsertIgnore to skip duplicate entry errors
+//			if err := tx.Clauses(clause.Insert{Modifier: "IGNORE"}).Create(&item).Error; err != nil {
+//				// Other errors, rollback the transaction and return the error
+//				tx.Rollback()
+//				return err
+//			}
+//		}
+//		return tx.Commit().Error
+//	}
 func InsertItems(items []common.NewsItem) error {
-    for _, item := range items {
-        if err := db.Clauses(clause.Insert{Modifier: "IGNORE"}).Create(&item).Error; err != nil {
-            if !errors.Is(err, gorm.ErrRecordNotFound) {
-                return err
-            }
-        }
-    }
-    return nil
+	for _, item := range items {
+		if err := db.Clauses(clause.Insert{Modifier: "IGNORE"}).Create(&item).Error; err != nil {
+			if !errors.Is(err, gorm.ErrRecordNotFound) {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func GetItemByID(id uint) (common.NewsItem, error) {
@@ -107,26 +107,56 @@ func GetItemByID(id uint) (common.NewsItem, error) {
 	return item, nil
 }
 
-func SearchItemsByLangSources(langs []common.Lang, sources []string, query string, page, pageSize int) ([]common.NewsItem, error) {
+func SearchItems(langs []common.Lang, sources []string, query string, cursor string, pageSize int) (*common.PaginationResponse, error) {
 	var items []common.NewsItem
 
-	dbQuery := db.
+	decodedCursor, err := common.DecodeCursor(cursor)
+	if err != nil {
+		return nil, err
+	}
+
+	var dbQuery *gorm.DB
+	dbQuery = db.
 		Select("id", "title", "created_at", "language", "source_name", "url", "thumbnail_url").
-		Where("language IN ?", langs).
-		Where("source_name IN ?", sources).
-		Order("created_at DESC").
-		Limit(pageSize).
-		Offset((page - 1) * pageSize)
+		Order("id DESC").
+		Limit(pageSize)
 
 	if query != "" {
 		dbQuery = dbQuery.Where("MATCH(title, content_text) AGAINST (? IN BOOLEAN MODE)", query)
 	}
 
-	err := dbQuery.Find(&items).Error
-
-	if err != nil {
-		return items, err
+	if len(langs) > 0 && (len(langs) < len(providers.ActiveLangs)) {
+		dbQuery = dbQuery.Where("language IN ?", langs)
 	}
 
-	return items, nil
+	if len(sources) > 0 && (len(sources) < providers.ActiveProviderCount) {
+		dbQuery = dbQuery.Where("source_name IN ?", sources)
+	}
+
+	if decodedCursor.Direction == common.PaginationDirectionPrev {
+		dbQuery = dbQuery.
+			Where("id < ?", decodedCursor.ItemID)
+	} else {
+		dbQuery = dbQuery.Where("id > ?", decodedCursor.ItemID)
+	}
+
+	err = dbQuery.Find(&items).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	var prevCursor, nextCursor string
+
+	if len(items) > 0 {
+		prevCursor = common.CreateCursor(items[len(items)-1].ID, common.PaginationDirectionPrev)
+		nextCursor = common.CreateCursor(items[0].ID, common.PaginationDirectionNext)
+	}
+
+	response := common.PaginationResponse{
+		Data:   items,
+		Paging: common.PaginationPaging{Prev: prevCursor, Next: nextCursor},
+	}
+
+	return &response, nil
 }

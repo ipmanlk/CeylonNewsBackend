@@ -12,8 +12,8 @@ type getNewsData struct {
 	Langs    []common.Lang
 	Sources  []string
 	Query    string
-	Page     int
 	PageSize int
+	Cursor   string
 }
 
 type newsSource struct {
