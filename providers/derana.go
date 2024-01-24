@@ -39,11 +39,16 @@ func (p *Derana) FetchArticles(lang common.Lang) ([]common.Article, error) {
 	// 	common.LangTa: "https://tamil.adaderana.lk/",
 	// }
 
+	replacements := map[string]string{
+		"�": "'",
+	}
+
 	return extractor.ExtractArticles(common.ExtractorConfig{
-		URL:              supportedLangs[lang],
-		ListStrategy:     common.ExtractorStrategyRSS,
-		ArticleStrategy:  common.ExtractorStrategyHTML,
-		Limit:            maxNewsItemsPerFetch,
-		UseSplash:        true,
+		URL:             supportedLangs[lang],
+		ListStrategy:    common.ExtractorStrategyRSS,
+		ArticleStrategy: common.ExtractorStrategyHTML,
+		Limit:           maxNewsItemsPerFetch,
+		UseSplash:       true,
+		Replacements:    replacements,
 	})
 }
