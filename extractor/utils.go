@@ -43,8 +43,6 @@ func getGoQueryDocFromURL(url string) (*goquery.Document, error) {
 		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}
 
-	fmt.Println(url)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract HTML from %s: %v", url, err)
 	}
