@@ -235,11 +235,6 @@ func extractArticleFromBytes(body []byte, pageURL *nurl.URL) (*common.Article, e
 		thumbnailURL = readabilityRes.Image
 	}
 
-	createdAt := trafRes.Metadata.Date
-	if createdAt.IsZero() {
-		createdAt = time.Now()
-	}
-
 	cleanContentHTML, err := cleanHTMLString(readabilityRes.Content)
 	if err != nil {
 		return nil, fmt.Errorf("failed to clean HTML: %v", err)
@@ -251,16 +246,11 @@ func extractArticleFromBytes(body []byte, pageURL *nurl.URL) (*common.Article, e
 		ContentHTML:  cleanContentHTML,
 		URL:          pageURL.String(),
 		ThumbnailURL: &thumbnailURL,
-		CreatedAt:    createdAt,
+		CreatedAt:    time.Now(),
 	}, nil
 }
 
 func extractArticleFromFeedItem(item *gofeed.Item) (*common.Article, error) {
-	createdAt := *item.PublishedParsed
-	if createdAt.IsZero() {
-		createdAt = time.Now()
-	}
-
 	thumbnailURL := ""
 
 	if item.Image != nil {
@@ -286,6 +276,6 @@ func extractArticleFromFeedItem(item *gofeed.Item) (*common.Article, error) {
 		ContentHTML:  item.Content,
 		URL:          item.Link,
 		ThumbnailURL: thumbnailP,
-		CreatedAt:    createdAt,
+		CreatedAt:    time.Now(),
 	}, nil
 }
