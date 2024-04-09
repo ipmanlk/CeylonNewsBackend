@@ -84,29 +84,21 @@ func validateHandleGetNews(r *http.Request) (*getNewsData, *common.Err) {
 	}, nil
 }
 
-func validateHandleGetNewsItem(r *http.Request) (uint, *common.Err) {
+func validateHandleGetNewsItem(r *http.Request) (string, *common.Err) {
 	if r.Method != "GET" {
-		return 0, common.ErrInvalidRequestMethod
+		return "", common.ErrInvalidRequestMethod
 	}
 
 	idStr := strings.TrimPrefix(r.URL.Path, "/api/v1.0/news/")
 
 	if idStr == "" {
-		return 0, &common.Err{
+		return "", &common.Err{
 			Code:    400,
 			Message: "missing news item id",
 		}
 	}
 
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		return 0, &common.Err{
-			Code:    400,
-			Message: "invalid news item id",
-		}
-	}
-
-	return uint(id), nil
+	return idStr, nil
 }
 
 func getSources(sourcesStr string, langs []common.Lang) ([]string, *common.Err) {

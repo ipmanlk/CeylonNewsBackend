@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"strconv"
 	"strings"
 	"time"
@@ -29,15 +30,15 @@ type Article struct {
 }
 
 type NewsItem struct {
-	ID           uint      `json:"id"`
-	Title        string    `json:"title"`
-	URL          string    `gorm:"type:VARCHAR(255);unique" json:"url"`
-	ThumbnailURL *string   `json:"thumbnailURL,omitempty"`
-	Language     Lang      `gorm:"type:VARCHAR(2);index:idx_lang" json:"language"`
-	SourceName   string    `gorm:"type:VARCHAR(255);index:idx_source_name" json:"sourceName"`
-	CreatedAt    time.Time `json:"createdAt"`
-	ContentText  string    `gorm:"type:TEXT" json:"-"`
-	ContentHTML  string    `gorm:"type:TEXT" json:"contentHTML"`
+	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Title        string             `json:"title"`
+	URL          string             `bson:"url,omitempty" gorm:"type:VARCHAR(255);unique" json:"url"`
+	ThumbnailURL *string            `json:"thumbnailURL,omitempty"`
+	Language     Lang               `bson:"language,omitempty" gorm:"type:VARCHAR(2);index:idx_lang" json:"language"`
+	SourceName   string             `bson:"source_name,omitempty" gorm:"type:VARCHAR(255);index:idx_source_name" json:"sourceName"`
+	CreatedAt    time.Time          `json:"createdAt"`
+	ContentText  string             `bson:"content_text,omitempty" gorm:"type:TEXT" json:"-"`
+	ContentHTML  string             `bson:"content_html,omitempty" gorm:"type:TEXT" json:"contentHTML"`
 }
 
 type NewsProvider interface {
@@ -120,6 +121,11 @@ type CursorData struct {
 	Direction PaginationDirection
 }
 
+type CursorDataNoSql struct {
+	ItemID    primitive.ObjectID
+	Direction PaginationDirection
+}
+
 // json.Marshal doesn't support SetEscapeHTML.
 // This will marshal the given object without escaping HTML.
 func JSONMarshal(t interface{}) ([]byte, error) {
@@ -148,7 +154,6 @@ func StringToLangs(langsStr string) ([]Lang, error) {
 
 	return langs, nil
 }
-
 
 func CreateCursor(itemID uint, direction PaginationDirection) string {
 	cursorStr := fmt.Sprintf("%d/%s", itemID, direction)
@@ -188,6 +193,44 @@ func DecodeCursor(cursor string) (*CursorData, error) {
 
 	return &CursorData{
 		ItemID:    uint(itemID),
+		Direction: direction,
+	}, nil
+}
+
+func CreateCursorNoSql(itemID primitive.ObjectID, direction PaginationDirection) string {
+	cursorStr := fmt.Sprintf("%s/%s", itemID.Hex(), direction)
+	return base64.StdEncoding.EncodeToString([]byte(cursorStr))
+}
+
+func DecodeCursorNoSql(cursor string) (*CursorDataNoSql, error) {
+	decoded, err := base64.StdEncoding.DecodeString(cursor)
+	if err != nil {
+		return nil, errors.New("failed to decode cursor")
+	}
+
+	cursorParts := strings.Split(string(decoded), "/")
+
+	if len(cursorParts) != 2 {
+		return nil, errors.New("invalid cursor format")
+	}
+
+	itemID, err := primitive.ObjectIDFromHex(cursorParts[0])
+	if err != nil {
+		return nil, errors.New("failed to parse itemID")
+	}
+
+	directionStr := cursorParts[1]
+
+	var direction PaginationDirection
+	switch PaginationDirection(directionStr) {
+	case PaginationDirectionNext, PaginationDirectionPrev:
+		direction = PaginationDirection(directionStr)
+	default:
+		return nil, errors.New("invalid pagination direction")
+	}
+
+	return &CursorDataNoSql{
+		ItemID:    itemID,
 		Direction: direction,
 	}, nil
 }

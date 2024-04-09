@@ -2,13 +2,16 @@ package main
 
 import (
 	"ipmanlk/cnapi/api"
+	"ipmanlk/cnapi/nosqldb"
 	"ipmanlk/cnapi/scraper"
-	"ipmanlk/cnapi/sqldb"
 	"sync"
 )
 
 func main() {
-	sqldb.InitDB()
+	err := nosqldb.InitDB()
+	if err != nil {
+		panic(err)
+	}
 
 	var wg sync.WaitGroup
 	wg.Add(2)

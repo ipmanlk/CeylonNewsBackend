@@ -2,8 +2,8 @@ package api
 
 import (
 	"ipmanlk/cnapi/common"
+	"ipmanlk/cnapi/nosqldb"
 	"ipmanlk/cnapi/providers"
-	"ipmanlk/cnapi/sqldb"
 	"log"
 	"net/http"
 )
@@ -51,7 +51,7 @@ func HandleGetNews(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	items, er := sqldb.SearchItems(data.Langs, data.Sources, data.Query, data.Cursor, data.PageSize)
+	items, er := nosqldb.SearchItems(data.Langs, data.Sources, data.Query, data.Cursor, data.PageSize)
 	if er != nil {
 		log.Printf("Error getting data: %v", er)
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
@@ -77,7 +77,7 @@ func HandleGetNewsItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	item, er := sqldb.GetItemByID(id)
+	item, er := nosqldb.GetItemByID(id)
 
 	if er != nil {
 		log.Printf("Error getting data: %v", er)

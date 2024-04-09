@@ -2,8 +2,8 @@ package scraper
 
 import (
 	"ipmanlk/cnapi/common"
+	"ipmanlk/cnapi/nosqldb"
 	"ipmanlk/cnapi/providers"
-	"ipmanlk/cnapi/sqldb"
 	"log"
 	"sync"
 	"time"
@@ -80,7 +80,7 @@ func processProvider(p common.NewsProvider) error {
 			}
 		}
 
-		err = sqldb.InsertItems(newsItems)
+		err = nosqldb.InsertItems(newsItems)
 		if err != nil {
 			return err
 		}
