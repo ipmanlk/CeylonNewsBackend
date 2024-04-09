@@ -7,7 +7,7 @@ services:
       MYSQL_DATABASE: cn
       MYSQL_ROOT_PASSWORD: "root"
     ports:
-      - "3308:3306"
+      - "127.0.0.1:3308:3306"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
@@ -21,21 +21,20 @@ services:
       dockerfile: Dockerfile
     container_name: splash
     ports:
-      - "8050:8050"
+      - "127.0.0.1:8050:8050"
     networks:
       - cn_network
     deploy:
       resources:
         limits:
           memory: 200M
-
   cnapi:
     build:
       context: .
       dockerfile: Dockerfile.dev
     container_name: cnapi
     ports:
-      - "3500:8080"
+      - "127.0.0.1:3500:8080"
     depends_on:
       mysql:
         condition: service_healthy

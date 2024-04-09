@@ -80,6 +80,10 @@ func isFetchingBlocked(article *common.Article) bool {
 var splashURL = os.Getenv("SPLASH_URL")
 
 func formatURL(url string, useSplash bool) string {
+	if splashURL == "" {
+		splashURL = "http://splash:8050"
+	}
+
 	if useSplash {
 		url = fmt.Sprintf("%s/?url=%s", splashURL, url)
 	}
@@ -94,7 +98,6 @@ func hasSkipQuery(article *common.Article, skipQueries []string) bool {
 	}
 	return false
 }
-
 
 // removeAttributes removes specified attributes from all elements in the given goquery.Selection.
 func removeAttributes(selection *goquery.Selection, attributes ...string) {

@@ -18,7 +18,7 @@ func InitDB() error {
 	dsn := os.Getenv("MYSQL_DSN")
 
 	if dsn == "" {
-		dsn = "root:@tcp(0.0.0.0:3306)/cn?charset=utf8mb4&parseTime=True&loc=Local"
+		dsn = "root:root@tcp(mysql:3306)/cn?charset=utf8mb4&parseTime=True&loc=Local"
 	}
 
 	var err error
