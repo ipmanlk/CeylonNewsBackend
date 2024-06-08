@@ -3,6 +3,7 @@ services:
   mysql:
     image: mysql:8
     container_name: cndb
+    restart: unless-stopped    
     environment:
       MYSQL_DATABASE: cn
       MYSQL_ROOT_PASSWORD: "root"
