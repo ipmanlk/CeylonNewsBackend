@@ -1,0 +1,9 @@
+services:
+  web-scraper:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
+    shm_size: '2gb'  # Shared memory for Chrome
