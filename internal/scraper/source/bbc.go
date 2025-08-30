@@ -2,20 +2,31 @@ package source
 
 import (
 	"context"
+	"ipmanlk/cnapi/internal/fetcher"
 	"ipmanlk/cnapi/internal/model"
-	"ipmanlk/cnapi/internal/scraper"
+	"log/slog"
 	"strings"
-
-	"github.com/PuerkitoBio/goquery"
 )
 
 type BBCScraper struct {
+	httpClient      *fetcher.HTTPClient
+	htmlProcessor   *fetcher.HTMLProcessor
+	contentExtractor *fetcher.ContentExtractor
+	logger          *slog.Logger
 }
 
 func NewBBCScraper(
-	rssScraper *scraper.RSSScraper,
+	httpClient *fetcher.HTTPClient,
+	htmlProcessor *fetcher.HTMLProcessor,
+	contentExtractor *fetcher.ContentExtractor,
+	logger *slog.Logger,
 ) *BBCScraper {
-	return &BBCScraper{}
+	return &BBCScraper{
+		httpClient:      httpClient,
+		htmlProcessor:   htmlProcessor,
+		contentExtractor: contentExtractor,
+		logger:          logger,
+	}
 }
 
 func (s *BBCScraper) Name() string {
@@ -27,38 +38,64 @@ func (s *BBCScraper) Languages() []model.Language {
 }
 
 func (s *BBCScraper) Scrape(ctx context.Context, language model.Language) ([]model.ScrapedArticle, error) {
-	return s.scrapeEn(ctx)
+	switch language {
+	case model.LangEn:
+		return s.scrapeEn(ctx)
+	case model.LangSi:
+		return s.scrapeSi(ctx)
+	case model.LangTa:
+		return s.scrapeTa(ctx)
+	default:
+		return nil, nil
+	}
 }
 
 func (s *BBCScraper) scrapeEn(ctx context.Context) ([]model.ScrapedArticle, error) {
-	doc, err := scraper.GetGoQueryDocFromURL(ctx, "https://www.bbc.com/news/topics/cywd23g0gxgt")
+	doc, err := s.httpClient.FetchHTMLDoc(ctx, "https://www.bbc.com/news/topics/cywd23g0gxgt")
 	if err != nil {
 		return nil, err
 	}
 
-	articleLinks := []string{}
-	doc.Find("a[class*='hMvGwj']").Each(func(i int, selection *goquery.Selection) {
-		href, exists := selection.Attr("href")
-		if exists && href != "" && (strings.HasPrefix(href, "/news/articles/")) {
-			href = "https://www.bbc.com" + href
-			articleLinks = append(articleLinks, href)
+	articleLinks := s.htmlProcessor.ExtractLinks(doc, "a[class*='hMvGwj']", "/news/articles/")
+	
+	// Convert relative URLs to absolute URLs
+	for i, link := range articleLinks {
+		if strings.HasPrefix(link, "/") {
+			articleLinks[i] = "https://www.bbc.com" + link
 		}
-	})
+	}
 
-	articles := make([]model.ScrapedArticle, 0, len(articleLinks))
+	return s.scrapeArticles(ctx, articleLinks, model.LangEn)
+}
+
+func (s *BBCScraper) scrapeSi(ctx context.Context) ([]model.ScrapedArticle, error) {
+	// TODO: Implement Sinhala scraping
+	return nil, nil
+}
+
+func (s *BBCScraper) scrapeTa(ctx context.Context) ([]model.ScrapedArticle, error) {
+	// TODO: Implement Tamil scraping
+	return nil, nil
+}
+
+func (s *BBCScraper) scrapeArticles(ctx context.Context, links []string, language model.Language) ([]model.ScrapedArticle, error) {
+	articles := make([]model.ScrapedArticle, 0, len(links))
 	seenLinks := make(map[string]bool)
-	for _, link := range articleLinks {
+
+	for _, link := range links {
 		if seenLinks[link] {
 			continue
 		}
 		seenLinks[link] = true
 
-		result, err := scraper.ScrapeArticleFromURL(ctx, link)
+		result, err := s.contentExtractor.ExtractArticleFromURL(ctx, link)
 		if err != nil {
+			s.logger.Warn("failed to extract article", "url", link, "error", err)
 			continue
 		}
 
 		if result == nil || result.Metadata.Title == "" || result.ContentText == "" {
+			s.logger.Debug("skipping article with missing content", "url", link)
 			continue
 		}
 
@@ -69,11 +106,12 @@ func (s *BBCScraper) scrapeEn(ctx context.Context) ([]model.ScrapedArticle, erro
 			ContentHTML: "",
 			URL:         link,
 			ImageURL:    &result.Metadata.Image,
-			Language:    model.LangEn,
+			Language:    language,
 			PublishedAt: result.Metadata.Date,
 		}
 
 		articles = append(articles, article)
 	}
+
 	return articles, nil
 }

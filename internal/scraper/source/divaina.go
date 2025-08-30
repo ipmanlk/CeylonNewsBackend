@@ -3,19 +3,23 @@ package source
 import (
 	"context"
 	"errors"
+	"ipmanlk/cnapi/internal/fetcher"
 	"ipmanlk/cnapi/internal/model"
-	"ipmanlk/cnapi/internal/scraper"
+	"log/slog"
 )
 
 type DivainaScraper struct {
-	rssScraper *scraper.RSSScraper
+	rssFetcher *fetcher.RSSFetcher
+	logger     *slog.Logger
 }
 
 func NewDivainaScraper(
-	rssScraper *scraper.RSSScraper,
+	rssFetcher *fetcher.RSSFetcher,
+	logger *slog.Logger,
 ) *DivainaScraper {
 	return &DivainaScraper{
-		rssScraper: rssScraper,
+		rssFetcher: rssFetcher,
+		logger:     logger,
 	}
 }
 
@@ -37,10 +41,21 @@ func (s *DivainaScraper) Scrape(ctx context.Context, language model.Language) ([
 }
 
 func (s *DivainaScraper) scrapeSi(ctx context.Context) ([]model.ScrapedArticle, error) {
-	articles, err := s.rssScraper.Scrape(ctx, "https://www.divaina.com/rss.php")
+	articles, err := s.rssFetcher.FetchArticles(ctx, "https://www.divaina.com/rss.php")
 	if err != nil {
 		return nil, err
 	}
+
+	// Set source name and language for all articles
+	for i := range articles {
+		articles[i].SourceName = s.Name()
+		articles[i].Language = model.LangSi
+	}
+
+	s.logger.Info("scraped Divaina articles",
+		"count", len(articles),
+		"language", model.LangSi,
+	)
 
 	return articles, nil
 }

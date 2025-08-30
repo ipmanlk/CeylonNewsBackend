@@ -5,6 +5,7 @@ import (
 	"ipmanlk/cnapi/internal/model"
 )
 
+// SourceScraper defines the interface for all news source scrapers
 type SourceScraper interface {
 	Name() string
 	Languages() []model.Language
