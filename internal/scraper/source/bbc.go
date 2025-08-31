@@ -27,7 +27,6 @@ func (s *BBCScraper) Languages() []model.Language {
 }
 
 func (s *BBCScraper) Scrape(ctx context.Context, language model.Language) ([]model.ScrapedArticle, error) {
-
 	switch language {
 	case model.LangEn:
 		return s.scrapeEn(ctx)
