@@ -51,8 +51,17 @@ func (s *DeranaScraper) scrapeEn(ctx context.Context) ([]model.ScrapedArticle, e
 }
 
 func (s *DeranaScraper) scrapeSi(ctx context.Context) ([]model.ScrapedArticle, error) {
-	// TODO: Implement Sinhala scraping
-	return nil, nil
+	articles, err := s.fetcher.FetchRSS(ctx, "https://sinhala.adaderana.lk/rsshotnews.php")
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range articles {
+		articles[i].SourceName = s.Name()
+		articles[i].Language = model.LangSi
+	}
+
+	return articles, nil
 }
 
 func (s *DeranaScraper) scrapeTa(ctx context.Context) ([]model.ScrapedArticle, error) {

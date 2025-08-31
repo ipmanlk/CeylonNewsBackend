@@ -74,6 +74,12 @@ func (f *Fetcher) FetchRSS(ctx context.Context, url string, useBrowser ...bool) 
 		return nil, fmt.Errorf("failed to parse RSS feed: %w", err)
 	}
 
+	// Limit to first x items (newest)
+	maxItems := 5
+	if len(feed.Items) > maxItems {
+		feed.Items = feed.Items[:maxItems]
+	}
+
 	articles := make([]model.ScrapedArticle, 0, len(feed.Items))
 	articleURLs := make(map[string]struct{})
 
