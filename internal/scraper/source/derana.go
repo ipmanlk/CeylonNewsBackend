@@ -77,7 +77,7 @@ func (s *DeranaScraper) scrapeSi(ctx context.Context) ([]model.ScrapedArticle, e
 }
 
 func (s *DeranaScraper) scrapeTa(ctx context.Context) ([]model.ScrapedArticle, error) {
-	items, err := s.fetcher.FetchRSS(ctx, "http://tamil.adaderana.lk/rss.php", 5)
+	items, err := s.fetcher.FetchRSSWithBrowser(ctx, "http://tamil.adaderana.lk/rss.php", 5)
 	if err != nil {
 		return nil, err
 	}

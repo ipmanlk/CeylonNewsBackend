@@ -24,6 +24,9 @@ func NewRegistry() *Registry {
 
 	scrapers := []SourceScraper{
 		source.NewBBCScraper(fetcher),
+		source.NewDeranaScraper(fetcher),
+		source.NewDailyMirrorScraper(fetcher),
+		source.NewDivainaScraper(fetcher),
 	}
 
 	return &Registry{
