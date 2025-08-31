@@ -27,6 +27,7 @@ func NewRegistry() *Registry {
 		source.NewDeranaScraper(fetcher),
 		source.NewDailyMirrorScraper(fetcher),
 		source.NewDivainaScraper(fetcher),
+		source.NewHiruScraper(fetcher),
 	}
 
 	return &Registry{
