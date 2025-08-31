@@ -23,8 +23,7 @@ func NewRegistry() *Registry {
 	fetcher := fetcher.NewFetcher(httpClient, browserClient)
 
 	scrapers := []SourceScraper{
-		source.NewBBCScraper(fetcher),
-		source.NewDivainaScraper(fetcher),
+		source.NewDeranaScraper(fetcher),
 	}
 
 	return &Registry{
