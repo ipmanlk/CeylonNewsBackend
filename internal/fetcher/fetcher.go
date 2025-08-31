@@ -69,7 +69,7 @@ func (f *Fetcher) ExtractArticle(ctx context.Context, url string, useBrowser ...
 }
 
 // FetchRSS fetches and parses RSS feed
-func (f *Fetcher) FetchRSS(ctx context.Context, url string) ([]model.ScrapedArticle, error) {
+func (f *Fetcher) FetchRSS(ctx context.Context, url string, useBrowser ...bool) ([]model.ScrapedArticle, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURLWithContext(url, ctx)
 	if err != nil {
@@ -90,7 +90,7 @@ func (f *Fetcher) FetchRSS(ctx context.Context, url string) ([]model.ScrapedArti
 			continue
 		}
 
-		article, err := f.processRSSItem(ctx, item)
+		article, err := f.processRSSItem(ctx, item, useBrowser...)
 		if err != nil {
 			f.logger.Warn("failed to process item, skipping", "feed_url", url, "item_link", item.Link, "error", err)
 			continue
@@ -103,8 +103,8 @@ func (f *Fetcher) FetchRSS(ctx context.Context, url string) ([]model.ScrapedArti
 	return articles, nil
 }
 
-func (f *Fetcher) processRSSItem(ctx context.Context, item *gofeed.Item) (model.ScrapedArticle, error) {
-	result, err := f.ExtractArticle(ctx, item.Link)
+func (f *Fetcher) processRSSItem(ctx context.Context, item *gofeed.Item, useBrowser ...bool) (model.ScrapedArticle, error) {
+	result, err := f.ExtractArticle(ctx, item.Link, useBrowser...)
 	if err != nil {
 		return model.ScrapedArticle{}, fmt.Errorf("failed to extract article: %w", err)
 	}
