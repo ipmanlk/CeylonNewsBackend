@@ -28,42 +28,131 @@ class BrowserScraper:
             options.add_argument('--window-size=1920,1080')
             options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
             
+            # Block CSS and images
+            options.add_argument('--disable-javascript-images')
+            options.add_argument('--disable-plugins')
+            options.add_argument('--disable-extensions')
+            options.add_argument('--disable-web-security')
+            options.add_argument('--disable-features=VizDisplayCompositor')
+            
+            prefs = {
+                "profile.managed_default_content_settings.images": 2,  # Block images
+                "profile.default_content_setting_values.images": 2,    # Block images
+                "profile.managed_default_content_settings.stylesheets": 2,  # Block CSS
+                "profile.default_content_setting_values.stylesheets": 2,    # Block CSS
+                "profile.managed_default_content_settings.media_stream": 2,  # Block media
+                "profile.default_content_setting_values.media_stream": 2,    # Block media
+            }
+            options.add_experimental_option("prefs", prefs)
+            
             self.driver = uc.Chrome(options=options)
             self.driver.implicitly_wait(10)
         return self.driver
     
-    def scrape(self, url, wait_time=3):
+    def scrape(self, url, wait_time=15):
         driver = self.get_driver()
         
         try:
             logger.info(f"Scraping URL: {url}")
+            
+            # Check if this is an RSS feed
+            is_rss = any(rss_indicator in url.lower() for rss_indicator in ['rss', 'feed', 'xml'])
+            
+            if is_rss:
+                # For RSS feeds, get the raw response content
+                driver.get(url)
+                time.sleep(wait_time)
+                
+                # Get the raw response content using Chrome DevTools
+                raw_content = driver.execute_script("""
+                    return new Promise((resolve) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', arguments[0], true);
+                        xhr.setRequestHeader('Accept', 'application/rss+xml, application/xml, text/xml, */*');
+                        xhr.onload = function() {
+                            resolve(xhr.responseText);
+                        };
+                        xhr.send();
+                    });
+                """, url)
+                
+                # Wait a bit for the XHR to complete
+                time.sleep(5)
+                
+                if raw_content and len(raw_content) > 100:
+                    return {
+                        "success": True,
+                        "html": raw_content,
+                        "url": url
+                    }
+            
+            # For regular pages, use browser with network interception
             driver.get(url)
+            
+            # Set up network interception to block CSS and images
+            driver.execute_cdp_cmd('Network.setBypassServiceWorker', {'bypass': True})
+            driver.execute_cdp_cmd('Network.enable', {})
+            
+            # Block CSS and image requests
+            driver.execute_script("""
+                // Intercept and block CSS and image requests
+                const originalFetch = window.fetch;
+                window.fetch = function(url, options) {
+                    const urlStr = url.toString().toLowerCase();
+                    if (urlStr.includes('.css') || urlStr.includes('.jpg') || urlStr.includes('.jpeg') || 
+                        urlStr.includes('.png') || urlStr.includes('.gif') || urlStr.includes('.webp') ||
+                        urlStr.includes('.svg') || urlStr.includes('image/') || urlStr.includes('stylesheet')) {
+                        return Promise.reject(new Error('Blocked resource'));
+                    }
+                    return originalFetch.apply(this, arguments);
+                };
+                
+                // Block CSS and image elements from loading
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1) { // Element node
+                                if (node.tagName === 'LINK' && node.rel === 'stylesheet') {
+                                    node.disabled = true;
+                                    node.remove();
+                                }
+                                if (node.tagName === 'IMG') {
+                                    node.style.display = 'none';
+                                    node.src = '';
+                                }
+                                if (node.tagName === 'STYLE') {
+                                    node.disabled = true;
+                                    node.remove();
+                                }
+                            }
+                        });
+                    });
+                });
+                
+                observer.observe(document, {
+                    childList: true,
+                    subtree: true
+                });
+                
+                // Block existing CSS and images
+                document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+                    link.disabled = true;
+                    link.remove();
+                });
+                
+                document.querySelectorAll('img').forEach(img => {
+                    img.style.display = 'none';
+                    img.src = '';
+                });
+                
+                document.querySelectorAll('style').forEach(style => {
+                    style.disabled = true;
+                    style.remove();
+                });
+            """)
             
             # Wait for page to load
             time.sleep(wait_time)
-            
-            # Block images and CSS after page loads
-            driver.execute_script("""
-                // Block images
-                var images = document.getElementsByTagName('img');
-                for(var i = 0; i < images.length; i++) {
-                    images[i].style.display = 'none';
-                }
-                
-                // Block CSS
-                var links = document.getElementsByTagName('link');
-                for(var i = 0; i < links.length; i++) {
-                    if(links[i].rel === 'stylesheet') {
-                        links[i].disabled = true;
-                    }
-                }
-                
-                // Block style tags
-                var styles = document.getElementsByTagName('style');
-                for(var i = 0; i < styles.length; i++) {
-                    styles[i].disabled = true;
-                }
-            """)
             
             # Get the HTML
             html = driver.page_source
