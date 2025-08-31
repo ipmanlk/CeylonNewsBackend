@@ -4,7 +4,6 @@ import (
 	"context"
 	"ipmanlk/cnapi/internal/fetcher"
 	"ipmanlk/cnapi/internal/model"
-	"log/slog"
 )
 
 type DeranaScraper struct {
@@ -39,17 +38,18 @@ func (s *DeranaScraper) Scrape(ctx context.Context, language model.Language) ([]
 }
 
 func (s *DeranaScraper) scrapeEn(ctx context.Context) ([]model.ScrapedArticle, error) {
-	doc, err := s.fetcher.FetchHTMLDoc(ctx, "https://www.adaderana.lk/hot-news/", true)
+	articles, err := s.fetcher.FetchRSS(ctx, "https://www.adaderana.lk/rss.php")
 	if err != nil {
 		return nil, err
 	}
 
-	articleLinks := s.fetcher.ExtractLinks(doc, ".story-text h2 a", "https://www.adaderana.lk/news/")
-	articleLinks = articleLinks[:5]
+	for i := range articles {
+		articles[i].SourceName = s.Name()
+		articles[i].Language = model.LangEn
+	}
 
-	return s.scrapeArticles(ctx, articleLinks, model.LangEn)
+	return articles, nil
 }
-
 func (s *DeranaScraper) scrapeSi(ctx context.Context) ([]model.ScrapedArticle, error) {
 	articles, err := s.fetcher.FetchRSS(ctx, "https://sinhala.adaderana.lk/rsshotnews.php")
 	if err != nil {
@@ -65,42 +65,14 @@ func (s *DeranaScraper) scrapeSi(ctx context.Context) ([]model.ScrapedArticle, e
 }
 
 func (s *DeranaScraper) scrapeTa(ctx context.Context) ([]model.ScrapedArticle, error) {
-	// TODO: Implement Tamil scraping
-	return nil, nil
-}
+	articles, err := s.fetcher.FetchRSS(ctx, "http://tamil.adaderana.lk/rss.php")
+	if err != nil {
+		return nil, err
+	}
 
-func (s *DeranaScraper) scrapeArticles(ctx context.Context, links []string, language model.Language) ([]model.ScrapedArticle, error) {
-	articles := make([]model.ScrapedArticle, 0, len(links))
-	seenLinks := make(map[string]bool)
-
-	for _, link := range links {
-		if seenLinks[link] {
-			continue
-		}
-		seenLinks[link] = true
-
-		result, err := s.fetcher.ExtractArticle(ctx, link, true)
-		if err != nil {
-			slog.Warn("failed to extract article", "scraper", "Derana", "url", link, "error", err)
-			continue
-		}
-
-		if result == nil || result.Metadata.Title == "" || result.ContentText == "" {
-			slog.Debug("skipping article with missing content", "scraper", "Derana", "url", link)
-			continue
-		}
-
-		article := model.ScrapedArticle{
-			SourceName:  s.Name(),
-			Title:       result.Metadata.Title,
-			Content:     result.ContentText,
-			URL:         link,
-			ImageURL:    &result.Metadata.Image,
-			Language:    language,
-			PublishedAt: result.Metadata.Date,
-		}
-
-		articles = append(articles, article)
+	for i := range articles {
+		articles[i].SourceName = s.Name()
+		articles[i].Language = model.LangTa
 	}
 
 	return articles, nil

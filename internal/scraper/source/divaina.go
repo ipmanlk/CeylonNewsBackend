@@ -41,7 +41,6 @@ func (s *DivainaScraper) scrapeSi(ctx context.Context) ([]model.ScrapedArticle, 
 		return nil, err
 	}
 
-	// Set source name and language for all articles
 	for i := range articles {
 		articles[i].SourceName = s.Name()
 		articles[i].Language = model.LangSi

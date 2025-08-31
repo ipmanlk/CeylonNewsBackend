@@ -27,11 +27,14 @@ func (s *BBCScraper) Languages() []model.Language {
 }
 
 func (s *BBCScraper) Scrape(ctx context.Context, language model.Language) ([]model.ScrapedArticle, error) {
+
 	switch language {
 	case model.LangEn:
 		return s.scrapeEn(ctx)
+
 	case model.LangSi:
 		return s.scrapeSi(ctx)
+
 	case model.LangTa:
 		return s.scrapeTa(ctx)
 	default:
@@ -46,6 +49,9 @@ func (s *BBCScraper) scrapeEn(ctx context.Context) ([]model.ScrapedArticle, erro
 	}
 
 	articleLinks := s.fetcher.ExtractLinks(doc, "a[class*='hMvGwj']", "/news/articles/")
+	if len(articleLinks) > 5 {
+		articleLinks = articleLinks[:5]
+	}
 
 	// Convert relative URLs to absolute URLs
 	for i, link := range articleLinks {
@@ -58,13 +64,31 @@ func (s *BBCScraper) scrapeEn(ctx context.Context) ([]model.ScrapedArticle, erro
 }
 
 func (s *BBCScraper) scrapeSi(ctx context.Context) ([]model.ScrapedArticle, error) {
-	// TODO: Implement Sinhala scraping
-	return nil, nil
+	doc, err := s.fetcher.FetchHTMLDoc(ctx, "https://www.bbc.com/sinhala/topics/cg7267dz901t")
+	if err != nil {
+		return nil, err
+	}
+
+	articleLinks := s.fetcher.ExtractLinks(doc, "a[class*='bbc-1i4ie53']", "https://www.bbc.com/sinhala/articles/")
+	if len(articleLinks) > 5 {
+		articleLinks = articleLinks[:5]
+	}
+
+	return s.scrapeArticles(ctx, articleLinks, model.LangSi)
 }
 
 func (s *BBCScraper) scrapeTa(ctx context.Context) ([]model.ScrapedArticle, error) {
-	// TODO: Implement Tamil scraping
-	return nil, nil
+	doc, err := s.fetcher.FetchHTMLDoc(ctx, "https://www.bbc.com/tamil/topics/cz74k7p3qw7t")
+	if err != nil {
+		return nil, err
+	}
+
+	articleLinks := s.fetcher.ExtractLinks(doc, "div.promo-text a[class*='bbc-1i4ie53']", "https://www.bbc.com/tamil/articles/")
+	if len(articleLinks) > 5 {
+		articleLinks = articleLinks[:5]
+	}
+
+	return s.scrapeArticles(ctx, articleLinks, model.LangTa)
 }
 
 func (s *BBCScraper) scrapeArticles(ctx context.Context, links []string, language model.Language) ([]model.ScrapedArticle, error) {
