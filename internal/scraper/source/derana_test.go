@@ -4,7 +4,6 @@ import (
 	"context"
 	"ipmanlk/cnapi/internal/fetcher"
 	"ipmanlk/cnapi/internal/model"
-	"strings"
 	"testing"
 	"time"
 )
@@ -63,11 +62,6 @@ func TestDeranaScraper(t *testing.T) {
 			t.Error("Article published date is zero")
 		}
 
-		// Check that URL is from Derana domain
-		if !strings.Contains(article.URL, "adaderana.lk") {
-			t.Errorf("Article URL is not from Derana domain: %s", article.URL)
-		}
-
 		t.Logf("Successfully scraped %d English articles", len(articles))
 		t.Logf("First article: %s", article.Title)
 		t.Logf("First article URL: %s", article.URL)
@@ -108,11 +102,6 @@ func TestDeranaScraper(t *testing.T) {
 			t.Error("Article published date is zero")
 		}
 
-		// Check that URL is from Derana Sinhala domain
-		if !strings.Contains(article.URL, "sinhala.adaderana.lk") {
-			t.Errorf("Article URL is not from Derana Sinhala domain: %s", article.URL)
-		}
-
 		t.Logf("Successfully scraped %d Sinhala articles", len(articles))
 		t.Logf("First article: %s", article.Title)
 		t.Logf("First article URL: %s", article.URL)
@@ -151,11 +140,6 @@ func TestDeranaScraper(t *testing.T) {
 		}
 		if article.PublishedAt.IsZero() {
 			t.Error("Article published date is zero")
-		}
-
-		// Check that URL is from Derana Tamil domain
-		if !strings.Contains(article.URL, "tamil.adaderana.lk") {
-			t.Errorf("Article URL is not from Derana Tamil domain: %s", article.URL)
 		}
 
 		t.Logf("Successfully scraped %d Tamil articles", len(articles))

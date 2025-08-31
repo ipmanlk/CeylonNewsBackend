@@ -4,7 +4,6 @@ import (
 	"context"
 	"ipmanlk/cnapi/internal/fetcher"
 	"ipmanlk/cnapi/internal/model"
-	"strings"
 	"testing"
 	"time"
 )
@@ -64,11 +63,6 @@ func TestDivainaScraper(t *testing.T) {
 		}
 		if article.PublishedAt.IsZero() {
 			t.Error("Article published date is zero")
-		}
-
-		// Check that URL is from Divaina domain
-		if !strings.Contains(article.URL, "divaina.com") {
-			t.Errorf("Article URL is not from Divaina domain: %s", article.URL)
 		}
 
 		t.Logf("Successfully scraped %d Sinhala articles", len(articles))

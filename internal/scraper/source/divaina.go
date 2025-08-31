@@ -36,27 +36,52 @@ func (s *DivainaScraper) Scrape(ctx context.Context, language model.Language) ([
 }
 
 func (s *DivainaScraper) scrapeSi(ctx context.Context) ([]model.ScrapedArticle, error) {
-	items, err := s.fetcher.FetchRSS(ctx, "https://www.divaina.com/rss.php", 5)
+	doc, err := s.fetcher.FetchHTMLDoc(ctx, "https://www.divaina.lk/category/breaking-news")
 	if err != nil {
 		return nil, err
 	}
 
-	articles := make([]model.ScrapedArticle, 0, len(items))
-	for _, item := range items {
-		article, err := s.fetcher.ExtractArticleFromRSSItem(ctx, item)
-		if err != nil {
-			continue
-		}
-		article.SourceName = s.Name()
-		article.Language = model.LangSi
-		articles = append(articles, article)
+	articleLinks := s.fetcher.ExtractLinks(doc, "a.p-url", "https://www.divaina.lk/")
+	if len(articleLinks) > 5 {
+		articleLinks = articleLinks[:5]
 	}
 
-	slog.Info("scraped Divaina articles",
-		"scraper", "Divaina",
-		"count", len(articles),
-		"language", model.LangSi,
-	)
+	return s.scrapeArticles(ctx, articleLinks, model.LangSi)
+}
+
+func (s *DivainaScraper) scrapeArticles(ctx context.Context, links []string, language model.Language) ([]model.ScrapedArticle, error) {
+	articles := make([]model.ScrapedArticle, 0, len(links))
+	seenLinks := make(map[string]bool)
+
+	for _, link := range links {
+		if seenLinks[link] {
+			continue
+		}
+		seenLinks[link] = true
+
+		result, err := s.fetcher.ExtractArticle(ctx, link)
+		if err != nil {
+			slog.Warn("failed to extract article", "scraper", "Divaina", "url", link, "error", err)
+			continue
+		}
+
+		if result == nil || result.Metadata.Title == "" || result.ContentText == "" {
+			slog.Debug("skipping article with missing content", "scraper", "Divaina", "url", link)
+			continue
+		}
+
+		article := model.ScrapedArticle{
+			SourceName:  s.Name(),
+			Title:       result.Metadata.Title,
+			Content:     result.ContentText,
+			URL:         link,
+			ImageURL:    &result.Metadata.Image,
+			Language:    language,
+			PublishedAt: result.Metadata.Date,
+		}
+
+		articles = append(articles, article)
+	}
 
 	return articles, nil
 }

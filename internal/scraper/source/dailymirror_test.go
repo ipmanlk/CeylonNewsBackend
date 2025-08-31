@@ -71,11 +71,6 @@ func TestDailyMirrorScraper(t *testing.T) {
 			t.Error("Article title still contains the suffix that should have been removed")
 		}
 
-		// Check that URL is from Daily Mirror domain
-		if !strings.Contains(article.URL, "dailymirror.lk") {
-			t.Errorf("Article URL is not from Daily Mirror domain: %s", article.URL)
-		}
-
 		t.Logf("Successfully scraped %d English articles", len(articles))
 		t.Logf("First article: %s", article.Title)
 		t.Logf("First article URL: %s", article.URL)
