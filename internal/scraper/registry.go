@@ -1,17 +1,23 @@
 package scraper
 
 import (
+	"context"
 	"ipmanlk/cnapi/internal/fetcher"
+	"ipmanlk/cnapi/internal/model"
 	"ipmanlk/cnapi/internal/scraper/source"
 	"log/slog"
 )
 
-// Registry manages all available scrapers
+type SourceScraper interface {
+	Name() string
+	Languages() []model.Language
+	Scrape(ctx context.Context, language model.Language) ([]model.ScrapedArticle, error)
+}
+
 type Registry struct {
 	scrapers []SourceScraper
 }
 
-// NewRegistry creates a new scraper registry with all available scrapers
 func NewRegistry(logger *slog.Logger) *Registry {
 	// Create shared fetchers
 	httpClient := fetcher.NewHTTPClient()
@@ -19,12 +25,14 @@ func NewRegistry(logger *slog.Logger) *Registry {
 	contentExtractor := fetcher.NewContentExtractor(httpClient)
 
 	// Create RSS fetcher with extractor fallback
-	rssFetcher := fetcher.NewRSSFetcher(httpClient, htmlProcessor, logger)
-	rssFetcher.SetContentExtractor(contentExtractor)
+	rssFetcher := fetcher.NewRSSFetcher(httpClient, htmlProcessor, contentExtractor, logger)
 
-	// Create scrapers
+	// Create scrapers with browser API support
+	browserClient := fetcher.NewBrowserAPIClient()
+	htmlFetcher := fetcher.NewHTMLFetcher(browserClient)
+
 	scrapers := []SourceScraper{
-		source.NewBBCScraper(httpClient, htmlProcessor, contentExtractor, logger),
+		source.NewBBCScraper(htmlFetcher, htmlProcessor, contentExtractor, logger),
 		source.NewDivainaScraper(rssFetcher, logger),
 	}
 
@@ -33,12 +41,10 @@ func NewRegistry(logger *slog.Logger) *Registry {
 	}
 }
 
-// GetScrapers returns all registered scrapers
 func (r *Registry) GetScrapers() []SourceScraper {
 	return r.scrapers
 }
 
-// GetScraperByName returns a specific scraper by name
 func (r *Registry) GetScraperByName(name string) SourceScraper {
 	for _, scraper := range r.scrapers {
 		if scraper.Name() == name {
@@ -48,7 +54,6 @@ func (r *Registry) GetScraperByName(name string) SourceScraper {
 	return nil
 }
 
-// GetScrapersByLanguage returns scrapers that support a specific language
 func (r *Registry) GetScrapersByLanguage(language string) []SourceScraper {
 	var filtered []SourceScraper
 	for _, scraper := range r.scrapers {

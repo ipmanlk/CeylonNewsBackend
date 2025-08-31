@@ -9,23 +9,23 @@ import (
 )
 
 type BBCScraper struct {
-	httpClient      *fetcher.HTTPClient
-	htmlProcessor   *fetcher.HTMLProcessor
+	htmlFetcher      *fetcher.HTMLFetcher
+	htmlProcessor    *fetcher.HTMLProcessor
 	contentExtractor *fetcher.ContentExtractor
-	logger          *slog.Logger
+	logger           *slog.Logger
 }
 
 func NewBBCScraper(
-	httpClient *fetcher.HTTPClient,
+	htmlFetcher *fetcher.HTMLFetcher,
 	htmlProcessor *fetcher.HTMLProcessor,
 	contentExtractor *fetcher.ContentExtractor,
 	logger *slog.Logger,
 ) *BBCScraper {
 	return &BBCScraper{
-		httpClient:      httpClient,
-		htmlProcessor:   htmlProcessor,
+		htmlFetcher:      htmlFetcher,
+		htmlProcessor:    htmlProcessor,
 		contentExtractor: contentExtractor,
-		logger:          logger,
+		logger:           logger,
 	}
 }
 
@@ -51,13 +51,13 @@ func (s *BBCScraper) Scrape(ctx context.Context, language model.Language) ([]mod
 }
 
 func (s *BBCScraper) scrapeEn(ctx context.Context) ([]model.ScrapedArticle, error) {
-	doc, err := s.httpClient.FetchHTMLDoc(ctx, "https://www.bbc.com/news/topics/cywd23g0gxgt")
+	doc, err := s.htmlFetcher.FetchHTMLDoc(ctx, "https://www.bbc.com/news/topics/cywd23g0gxgt")
 	if err != nil {
 		return nil, err
 	}
 
 	articleLinks := s.htmlProcessor.ExtractLinks(doc, "a[class*='hMvGwj']", "/news/articles/")
-	
+
 	// Convert relative URLs to absolute URLs
 	for i, link := range articleLinks {
 		if strings.HasPrefix(link, "/") {

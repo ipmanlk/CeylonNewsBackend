@@ -11,12 +11,10 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-// HTTPClient provides a configured HTTP client for fetching content
 type HTTPClient struct {
 	client *http.Client
 }
 
-// NewHTTPClient creates a new HTTP client with default configuration
 func NewHTTPClient() *HTTPClient {
 	return &HTTPClient{
 		client: &http.Client{
@@ -25,7 +23,6 @@ func NewHTTPClient() *HTTPClient {
 	}
 }
 
-// NewHTTPClientWithTimeout creates a new HTTP client with custom timeout
 func NewHTTPClientWithTimeout(timeout time.Duration) *HTTPClient {
 	return &HTTPClient{
 		client: &http.Client{
@@ -34,7 +31,6 @@ func NewHTTPClientWithTimeout(timeout time.Duration) *HTTPClient {
 	}
 }
 
-// FetchHTML fetches HTML content from a URL
 func (h *HTTPClient) FetchHTML(ctx context.Context, url string) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -65,7 +61,6 @@ func (h *HTTPClient) FetchHTML(ctx context.Context, url string) ([]byte, error) 
 	return html, nil
 }
 
-// FetchHTMLDoc fetches and parses HTML into a goquery document
 func (h *HTTPClient) FetchHTMLDoc(ctx context.Context, url string) (*goquery.Document, error) {
 	html, err := h.FetchHTML(ctx, url)
 	if err != nil {

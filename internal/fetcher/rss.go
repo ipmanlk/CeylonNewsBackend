@@ -12,7 +12,6 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
-// RSSFetcher handles RSS feed fetching and parsing
 type RSSFetcher struct {
 	httpClient       *HTTPClient
 	htmlProcessor    *HTMLProcessor
@@ -20,21 +19,15 @@ type RSSFetcher struct {
 	logger           *slog.Logger
 }
 
-// NewRSSFetcher creates a new RSS fetcher
-func NewRSSFetcher(httpClient *HTTPClient, htmlProcessor *HTMLProcessor, logger *slog.Logger) *RSSFetcher {
+func NewRSSFetcher(httpClient *HTTPClient, htmlProcessor *HTMLProcessor, contentExtractor *ContentExtractor, logger *slog.Logger) *RSSFetcher {
 	return &RSSFetcher{
-		httpClient:    httpClient,
-		htmlProcessor: htmlProcessor,
-		logger:        logger,
+		httpClient:       httpClient,
+		htmlProcessor:    htmlProcessor,
+		contentExtractor: contentExtractor,
+		logger:           logger,
 	}
 }
 
-// SetContentExtractor sets the content extractor for fallback content extraction
-func (r *RSSFetcher) SetContentExtractor(extractor *ContentExtractor) {
-	r.contentExtractor = extractor
-}
-
-// FetchArticles fetches and parses articles from an RSS feed
 func (r *RSSFetcher) FetchArticles(ctx context.Context, url string) ([]model.ScrapedArticle, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURLWithContext(url, ctx)
@@ -79,7 +72,6 @@ func (r *RSSFetcher) FetchArticles(ctx context.Context, url string) ([]model.Scr
 	return articles, nil
 }
 
-// processItem processes a single RSS item, using extractor if needed
 func (r *RSSFetcher) processItem(ctx context.Context, item *gofeed.Item, feedURL string) (model.ScrapedArticle, error) {
 	var imageURL = r.getImageURL(item)
 	contentText, contentHTML, err := r.getContent(item)

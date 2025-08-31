@@ -7,15 +7,12 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-// HTMLProcessor provides utilities for processing HTML content
 type HTMLProcessor struct{}
 
-// NewHTMLProcessor creates a new HTML processor
 func NewHTMLProcessor() *HTMLProcessor {
 	return &HTMLProcessor{}
 }
 
-// GetFirstImageFromHTML extracts the first image URL from HTML content
 func (h *HTMLProcessor) GetFirstImageFromHTML(html []byte) *string {
 	var thumbnailURL string
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(html))
@@ -28,7 +25,6 @@ func (h *HTMLProcessor) GetFirstImageFromHTML(html []byte) *string {
 	return nil
 }
 
-// CleanHTMLString removes unwanted attributes and cleans HTML content
 func (h *HTMLProcessor) CleanHTMLString(html string) (string, error) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
@@ -65,7 +61,6 @@ func (h *HTMLProcessor) CleanHTMLString(html string) (string, error) {
 	return str, err
 }
 
-// GetTextFromHTML extracts plain text from HTML content
 func (h *HTMLProcessor) GetTextFromHTML(html string) (string, error) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
@@ -74,7 +69,6 @@ func (h *HTMLProcessor) GetTextFromHTML(html string) (string, error) {
 	return strings.TrimSpace(doc.Text()), nil
 }
 
-// ExtractLinks extracts links from a goquery document based on selector and URL pattern
 func (h *HTMLProcessor) ExtractLinks(doc *goquery.Document, selector, urlPattern string) []string {
 	var links []string
 	doc.Find(selector).Each(func(i int, selection *goquery.Selection) {
