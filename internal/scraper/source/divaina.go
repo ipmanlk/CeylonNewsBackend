@@ -36,14 +36,20 @@ func (s *DivainaScraper) Scrape(ctx context.Context, language model.Language) ([
 }
 
 func (s *DivainaScraper) scrapeSi(ctx context.Context) ([]model.ScrapedArticle, error) {
-	articles, err := s.fetcher.FetchRSS(ctx, "https://www.divaina.com/rss.php")
+	items, err := s.fetcher.FetchRSS(ctx, "https://www.divaina.com/rss.php", 5)
 	if err != nil {
 		return nil, err
 	}
 
-	for i := range articles {
-		articles[i].SourceName = s.Name()
-		articles[i].Language = model.LangSi
+	articles := make([]model.ScrapedArticle, 0, len(items))
+	for _, item := range items {
+		article, err := s.fetcher.ExtractArticleFromRSSItem(ctx, item)
+		if err != nil {
+			continue
+		}
+		article.SourceName = s.Name()
+		article.Language = model.LangSi
+		articles = append(articles, article)
 	}
 
 	slog.Info("scraped Divaina articles",

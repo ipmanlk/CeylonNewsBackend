@@ -66,8 +66,8 @@ func (f *Fetcher) ExtractArticle(ctx context.Context, url string, useBrowser ...
 	return result, nil
 }
 
-// FetchRSS fetches and parses RSS feed
-func (f *Fetcher) FetchRSS(ctx context.Context, url string, useBrowser ...bool) ([]model.ScrapedArticle, error) {
+// FetchRSS fetches and parses RSS feed, returning raw RSS items
+func (f *Fetcher) FetchRSS(ctx context.Context, url string, maxItems int, useBrowser ...bool) ([]*gofeed.Item, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURLWithContext(url, ctx)
 	if err != nil {
@@ -75,12 +75,12 @@ func (f *Fetcher) FetchRSS(ctx context.Context, url string, useBrowser ...bool) 
 	}
 
 	// Limit to first x items (newest)
-	maxItems := 5
 	if len(feed.Items) > maxItems {
 		feed.Items = feed.Items[:maxItems]
 	}
 
-	articles := make([]model.ScrapedArticle, 0, len(feed.Items))
+	// Filter out items with empty links and duplicates
+	items := make([]*gofeed.Item, 0, len(feed.Items))
 	articleURLs := make(map[string]struct{})
 
 	for _, item := range feed.Items {
@@ -94,20 +94,15 @@ func (f *Fetcher) FetchRSS(ctx context.Context, url string, useBrowser ...bool) 
 			continue
 		}
 
-		article, err := f.processRSSItem(ctx, item, useBrowser...)
-		if err != nil {
-			slog.Warn("failed to process item, skipping", "feed_url", url, "item_link", item.Link, "error", err)
-			continue
-		}
-
-		articles = append(articles, article)
+		items = append(items, item)
 		articleURLs[item.Link] = struct{}{}
 	}
 
-	return articles, nil
+	return items, nil
 }
 
-func (f *Fetcher) processRSSItem(ctx context.Context, item *gofeed.Item, useBrowser ...bool) (model.ScrapedArticle, error) {
+// ExtractArticleFromRSSItem extracts article content from an RSS item's URL
+func (f *Fetcher) ExtractArticleFromRSSItem(ctx context.Context, item *gofeed.Item, useBrowser ...bool) (model.ScrapedArticle, error) {
 	result, err := f.ExtractArticle(ctx, item.Link, useBrowser...)
 	if err != nil {
 		return model.ScrapedArticle{}, fmt.Errorf("failed to extract article: %w", err)
