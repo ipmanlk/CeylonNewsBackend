@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
 	"ipmanlk/cnapi/internal/model"
-	"log/slog"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/markusmobius/go-trafilatura"
@@ -18,14 +18,12 @@ import (
 type Fetcher struct {
 	httpClient    *HTTPClient
 	browserClient *BrowserAPIClient
-	logger        *slog.Logger
 }
 
-func NewFetcher(httpClient *HTTPClient, browserClient *BrowserAPIClient, logger *slog.Logger) *Fetcher {
+func NewFetcher(httpClient *HTTPClient, browserClient *BrowserAPIClient) *Fetcher {
 	return &Fetcher{
 		httpClient:    httpClient,
 		browserClient: browserClient,
-		logger:        logger,
 	}
 }
 
@@ -81,18 +79,18 @@ func (f *Fetcher) FetchRSS(ctx context.Context, url string, useBrowser ...bool) 
 
 	for _, item := range feed.Items {
 		if item.Link == "" {
-			f.logger.Warn("skipping item with empty link", "feed_url", url, "item_title", item.Title)
+			slog.Warn("skipping item with empty link", "feed_url", url, "item_title", item.Title)
 			continue
 		}
 
 		if _, exists := articleURLs[item.Link]; exists {
-			f.logger.Debug("skipping duplicate item", "feed_url", url, "item_link", item.Link)
+			slog.Debug("skipping duplicate item", "feed_url", url, "item_link", item.Link)
 			continue
 		}
 
 		article, err := f.processRSSItem(ctx, item, useBrowser...)
 		if err != nil {
-			f.logger.Warn("failed to process item, skipping", "feed_url", url, "item_link", item.Link, "error", err)
+			slog.Warn("failed to process item, skipping", "feed_url", url, "item_link", item.Link, "error", err)
 			continue
 		}
 

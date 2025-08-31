@@ -10,13 +10,11 @@ import (
 
 type BBCScraper struct {
 	fetcher *fetcher.Fetcher
-	logger  *slog.Logger
 }
 
-func NewBBCScraper(fetcher *fetcher.Fetcher, logger *slog.Logger) *BBCScraper {
+func NewBBCScraper(fetcher *fetcher.Fetcher) *BBCScraper {
 	return &BBCScraper{
 		fetcher: fetcher,
-		logger:  logger,
 	}
 }
 
@@ -81,12 +79,12 @@ func (s *BBCScraper) scrapeArticles(ctx context.Context, links []string, languag
 
 		result, err := s.fetcher.ExtractArticle(ctx, link)
 		if err != nil {
-			s.logger.Warn("failed to extract article", "url", link, "error", err)
+			slog.Warn("failed to extract article", "scraper", "BBC", "url", link, "error", err)
 			continue
 		}
 
 		if result == nil || result.Metadata.Title == "" || result.ContentText == "" {
-			s.logger.Debug("skipping article with missing content", "url", link)
+			slog.Debug("skipping article with missing content", "scraper", "BBC", "url", link)
 			continue
 		}
 

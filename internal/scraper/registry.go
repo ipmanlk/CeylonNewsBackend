@@ -5,7 +5,6 @@ import (
 	"ipmanlk/cnapi/internal/fetcher"
 	"ipmanlk/cnapi/internal/model"
 	"ipmanlk/cnapi/internal/scraper/source"
-	"log/slog"
 )
 
 type SourceScraper interface {
@@ -18,14 +17,14 @@ type Registry struct {
 	scrapers []SourceScraper
 }
 
-func NewRegistry(logger *slog.Logger) *Registry {
+func NewRegistry() *Registry {
 	httpClient := fetcher.NewHTTPClient()
 	browserClient := fetcher.NewBrowserAPIClient()
-	fetcher := fetcher.NewFetcher(httpClient, browserClient, logger)
+	fetcher := fetcher.NewFetcher(httpClient, browserClient)
 
 	scrapers := []SourceScraper{
-		source.NewBBCScraper(fetcher, logger),
-		source.NewDivainaScraper(fetcher, logger),
+		source.NewBBCScraper(fetcher),
+		source.NewDivainaScraper(fetcher),
 	}
 
 	return &Registry{

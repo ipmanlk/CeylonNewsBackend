@@ -8,17 +8,13 @@ import (
 	"log/slog"
 )
 
-// ScrapeService orchestrates scraping operations across all available scrapers
 type ScrapeService struct {
 	registry *scraper.Registry
-	logger   *slog.Logger
 }
 
-// NewScrapeService creates a new scraping service
-func NewScrapeService(registry *scraper.Registry, logger *slog.Logger) *ScrapeService {
+func NewScrapeService(registry *scraper.Registry) *ScrapeService {
 	return &ScrapeService{
 		registry: registry,
-		logger:   logger,
 	}
 }
 
@@ -31,7 +27,7 @@ func (s *ScrapeService) ScrapeAll(ctx context.Context) ([]model.ScrapedArticle, 
 		for _, lang := range scraper.Languages() {
 			articles, err := scraper.Scrape(ctx, lang)
 			if err != nil {
-				s.logger.Warn("failed to scrape from source",
+				slog.Warn("failed to scrape from source",
 					"source", scraper.Name(),
 					"language", lang,
 					"error", err,
@@ -39,7 +35,7 @@ func (s *ScrapeService) ScrapeAll(ctx context.Context) ([]model.ScrapedArticle, 
 				continue
 			}
 
-			s.logger.Info("successfully scraped articles",
+			slog.Info("successfully scraped articles",
 				"source", scraper.Name(),
 				"language", lang,
 				"count", len(articles),
@@ -63,7 +59,7 @@ func (s *ScrapeService) ScrapeBySource(ctx context.Context, sourceName string) (
 	for _, lang := range scraper.Languages() {
 		articles, err := scraper.Scrape(ctx, lang)
 		if err != nil {
-			s.logger.Warn("failed to scrape from source",
+			slog.Warn("failed to scrape from source",
 				"source", sourceName,
 				"language", lang,
 				"error", err,
@@ -85,7 +81,7 @@ func (s *ScrapeService) ScrapeByLanguage(ctx context.Context, language model.Lan
 	for _, scraper := range scrapers {
 		articles, err := scraper.Scrape(ctx, language)
 		if err != nil {
-			s.logger.Warn("failed to scrape from source",
+			slog.Warn("failed to scrape from source",
 				"source", scraper.Name(),
 				"language", language,
 				"error", err,
@@ -113,7 +109,7 @@ func (s *ScrapeService) GetAvailableSources() []string {
 func (s *ScrapeService) GetAvailableLanguages() []model.Language {
 	scrapers := s.registry.GetScrapers()
 	languageMap := make(map[model.Language]bool)
-	
+
 	for _, scraper := range scrapers {
 		for _, lang := range scraper.Languages() {
 			languageMap[lang] = true
@@ -124,6 +120,6 @@ func (s *ScrapeService) GetAvailableLanguages() []model.Language {
 	for lang := range languageMap {
 		languages = append(languages, lang)
 	}
-	
+
 	return languages
 }

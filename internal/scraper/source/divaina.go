@@ -10,13 +10,11 @@ import (
 
 type DivainaScraper struct {
 	fetcher *fetcher.Fetcher
-	logger  *slog.Logger
 }
 
-func NewDivainaScraper(fetcher *fetcher.Fetcher, logger *slog.Logger) *DivainaScraper {
+func NewDivainaScraper(fetcher *fetcher.Fetcher) *DivainaScraper {
 	return &DivainaScraper{
 		fetcher: fetcher,
-		logger:  logger,
 	}
 }
 
@@ -49,7 +47,8 @@ func (s *DivainaScraper) scrapeSi(ctx context.Context) ([]model.ScrapedArticle, 
 		articles[i].Language = model.LangSi
 	}
 
-	s.logger.Info("scraped Divaina articles",
+	slog.Info("scraped Divaina articles",
+		"scraper", "Divaina",
 		"count", len(articles),
 		"language", model.LangSi,
 	)
