@@ -67,7 +67,7 @@ func (f *Fetcher) ExtractArticle(ctx context.Context, url string, useBrowser ...
 }
 
 // FetchRSS fetches and parses RSS feed, returning raw RSS items
-func (f *Fetcher) FetchRSS(ctx context.Context, url string, maxItems int, useBrowser ...bool) ([]*gofeed.Item, error) {
+func (f *Fetcher) FetchRSS(ctx context.Context, url string, maxItems int) ([]*gofeed.Item, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURLWithContext(url, ctx)
 	if err != nil {
@@ -80,6 +80,44 @@ func (f *Fetcher) FetchRSS(ctx context.Context, url string, maxItems int, useBro
 	}
 
 	// Filter out items with empty links and duplicates
+	items := make([]*gofeed.Item, 0, len(feed.Items))
+	articleURLs := make(map[string]struct{})
+
+	for _, item := range feed.Items {
+		if item.Link == "" {
+			slog.Warn("skipping item with empty link", "feed_url", url, "item_title", item.Title)
+			continue
+		}
+
+		if _, exists := articleURLs[item.Link]; exists {
+			slog.Debug("skipping duplicate item", "feed_url", url, "item_link", item.Link)
+			continue
+		}
+
+		items = append(items, item)
+		articleURLs[item.Link] = struct{}{}
+	}
+
+	return items, nil
+}
+
+// FetchRSSWithBrowser fetches RSS feed using browser API for JavaScript-rendered feeds
+func (f *Fetcher) FetchRSSWithBrowser(ctx context.Context, url string, maxItems int) ([]*gofeed.Item, error) {
+	html, err := f.browserClient.FetchHTML(ctx, url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch RSS feed with browser: %w", err)
+	}
+
+	fp := gofeed.NewParser()
+	feed, err := fp.ParseString(string(html))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse RSS feed from browser content: %w", err)
+	}
+
+	if len(feed.Items) > maxItems {
+		feed.Items = feed.Items[:maxItems]
+	}
+
 	items := make([]*gofeed.Item, 0, len(feed.Items))
 	articleURLs := make(map[string]struct{})
 
