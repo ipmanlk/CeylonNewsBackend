@@ -6,8 +6,7 @@ type ScrapedArticle struct {
 	SourceName  string
 	Title       string
 	URL         string
-	ContentText string
-	ContentHTML string
+	Content     string
 	ImageURL    *string
 	Categories  []string
 	Language    Language

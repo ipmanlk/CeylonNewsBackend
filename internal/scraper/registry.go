@@ -19,21 +19,13 @@ type Registry struct {
 }
 
 func NewRegistry(logger *slog.Logger) *Registry {
-	// Create shared fetchers
 	httpClient := fetcher.NewHTTPClient()
-	htmlProcessor := fetcher.NewHTMLProcessor()
-	contentExtractor := fetcher.NewContentExtractor(httpClient)
-
-	// Create RSS fetcher with extractor fallback
-	rssFetcher := fetcher.NewRSSFetcher(httpClient, htmlProcessor, contentExtractor, logger)
-
-	// Create scrapers with browser API support
 	browserClient := fetcher.NewBrowserAPIClient()
-	htmlFetcher := fetcher.NewHTMLFetcher(browserClient)
+	fetcher := fetcher.NewFetcher(httpClient, browserClient, logger)
 
 	scrapers := []SourceScraper{
-		source.NewBBCScraper(htmlFetcher, htmlProcessor, contentExtractor, logger),
-		source.NewDivainaScraper(rssFetcher, logger),
+		source.NewBBCScraper(fetcher, logger),
+		source.NewDivainaScraper(fetcher, logger),
 	}
 
 	return &Registry{

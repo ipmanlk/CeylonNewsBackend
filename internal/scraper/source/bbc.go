@@ -9,23 +9,14 @@ import (
 )
 
 type BBCScraper struct {
-	htmlFetcher      *fetcher.HTMLFetcher
-	htmlProcessor    *fetcher.HTMLProcessor
-	contentExtractor *fetcher.ContentExtractor
-	logger           *slog.Logger
+	fetcher *fetcher.Fetcher
+	logger  *slog.Logger
 }
 
-func NewBBCScraper(
-	htmlFetcher *fetcher.HTMLFetcher,
-	htmlProcessor *fetcher.HTMLProcessor,
-	contentExtractor *fetcher.ContentExtractor,
-	logger *slog.Logger,
-) *BBCScraper {
+func NewBBCScraper(fetcher *fetcher.Fetcher, logger *slog.Logger) *BBCScraper {
 	return &BBCScraper{
-		htmlFetcher:      htmlFetcher,
-		htmlProcessor:    htmlProcessor,
-		contentExtractor: contentExtractor,
-		logger:           logger,
+		fetcher: fetcher,
+		logger:  logger,
 	}
 }
 
@@ -51,12 +42,12 @@ func (s *BBCScraper) Scrape(ctx context.Context, language model.Language) ([]mod
 }
 
 func (s *BBCScraper) scrapeEn(ctx context.Context) ([]model.ScrapedArticle, error) {
-	doc, err := s.htmlFetcher.FetchHTMLDoc(ctx, "https://www.bbc.com/news/topics/cywd23g0gxgt")
+	doc, err := s.fetcher.FetchHTMLDoc(ctx, "https://www.bbc.com/news/topics/cywd23g0gxgt")
 	if err != nil {
 		return nil, err
 	}
 
-	articleLinks := s.htmlProcessor.ExtractLinks(doc, "a[class*='hMvGwj']", "/news/articles/")
+	articleLinks := s.fetcher.ExtractLinks(doc, "a[class*='hMvGwj']", "/news/articles/")
 
 	// Convert relative URLs to absolute URLs
 	for i, link := range articleLinks {
@@ -88,7 +79,7 @@ func (s *BBCScraper) scrapeArticles(ctx context.Context, links []string, languag
 		}
 		seenLinks[link] = true
 
-		result, err := s.contentExtractor.ExtractArticleFromURL(ctx, link)
+		result, err := s.fetcher.ExtractArticle(ctx, link)
 		if err != nil {
 			s.logger.Warn("failed to extract article", "url", link, "error", err)
 			continue
@@ -102,8 +93,7 @@ func (s *BBCScraper) scrapeArticles(ctx context.Context, links []string, languag
 		article := model.ScrapedArticle{
 			SourceName:  s.Name(),
 			Title:       result.Metadata.Title,
-			ContentText: result.ContentText,
-			ContentHTML: "",
+			Content:     result.ContentText,
 			URL:         link,
 			ImageURL:    &result.Metadata.Image,
 			Language:    language,

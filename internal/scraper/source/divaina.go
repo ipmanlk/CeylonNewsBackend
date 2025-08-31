@@ -9,17 +9,14 @@ import (
 )
 
 type DivainaScraper struct {
-	rssFetcher *fetcher.RSSFetcher
-	logger     *slog.Logger
+	fetcher *fetcher.Fetcher
+	logger  *slog.Logger
 }
 
-func NewDivainaScraper(
-	rssFetcher *fetcher.RSSFetcher,
-	logger *slog.Logger,
-) *DivainaScraper {
+func NewDivainaScraper(fetcher *fetcher.Fetcher, logger *slog.Logger) *DivainaScraper {
 	return &DivainaScraper{
-		rssFetcher: rssFetcher,
-		logger:     logger,
+		fetcher: fetcher,
+		logger:  logger,
 	}
 }
 
@@ -41,7 +38,7 @@ func (s *DivainaScraper) Scrape(ctx context.Context, language model.Language) ([
 }
 
 func (s *DivainaScraper) scrapeSi(ctx context.Context) ([]model.ScrapedArticle, error) {
-	articles, err := s.rssFetcher.FetchArticles(ctx, "https://www.divaina.com/rss.php")
+	articles, err := s.fetcher.FetchRSS(ctx, "https://www.divaina.com/rss.php")
 	if err != nil {
 		return nil, err
 	}
