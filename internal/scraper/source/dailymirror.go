@@ -37,7 +37,7 @@ func (s *DailyMirrorScraper) Scrape(ctx context.Context, language model.Language
 
 func (s *DailyMirrorScraper) scrapeEn(ctx context.Context) ([]model.ScrapedArticle, error) {
 	// Fetch RSS feed
-	rssItems, err := s.fetcher.FetchRSS(ctx, "https://www.dailymirror.lk/rss/todays_headlines/419", 10)
+	rssItems, err := s.fetcher.FetchRSS(ctx, "https://www.dailymirror.lk/rss/todays_headlines/419", 5)
 	if err != nil {
 		return nil, err
 	}

@@ -27,7 +27,14 @@ func NewRegistry() *Registry {
 		source.NewDeranaScraper(fetcher),
 		source.NewDailyMirrorScraper(fetcher),
 		source.NewDivainaScraper(fetcher),
+		source.NewGaganaScraper(fetcher),
 		source.NewHiruScraper(fetcher),
+		source.NewIslandScraper(fetcher),
+		source.NewLankadeepaScraper(fetcher),
+		source.NewLankapuvathScraper(fetcher),
+		source.NewMawrataScraper(fetcher),
+		source.NewNewsLKScraper(fetcher),
+		source.NewNethnewsScraper(fetcher),
 	}
 
 	return &Registry{

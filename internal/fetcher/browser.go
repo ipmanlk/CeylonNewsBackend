@@ -31,7 +31,7 @@ func NewBrowserAPIClient() *BrowserAPIClient {
 		client: &http.Client{
 			Timeout: 60 * time.Second,
 		},
-		waitTime: 3,
+		waitTime: 15,
 	}
 }
 
