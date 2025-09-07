@@ -10,7 +10,6 @@ CREATE TABLE articles (
     image_url TEXT,
     language TEXT NOT NULL CHECK (language IN ('en', 'si', 'ta')),
     published_at DATETIME NOT NULL,
-    scraped_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -21,7 +20,6 @@ CREATE TABLE articles (
 CREATE INDEX idx_articles_source_name ON articles(source_name);
 CREATE INDEX idx_articles_language ON articles(language);
 CREATE INDEX idx_articles_published_at ON articles(published_at);
-CREATE INDEX idx_articles_scraped_at ON articles(scraped_at);
 CREATE INDEX idx_articles_url ON articles(url);
 
 -- +goose StatementEnd
@@ -71,7 +69,6 @@ DROP TABLE IF EXISTS articles_fts;
 -- +goose StatementBegin
 -- Drop indexes
 DROP INDEX IF EXISTS idx_articles_url;
-DROP INDEX IF EXISTS idx_articles_scraped_at;
 DROP INDEX IF EXISTS idx_articles_published_at;
 DROP INDEX IF EXISTS idx_articles_language;
 DROP INDEX IF EXISTS idx_articles_source_name;

@@ -1,10 +1,6 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"ipmanlk/cnapi/internal/scraper"
-	"ipmanlk/cnapi/internal/service"
 	"log/slog"
 	"os"
 )
@@ -16,24 +12,24 @@ func main() {
 	}))
 	slog.SetDefault(logger)
 
-	registry := scraper.NewRegistry()
-	scrapeService := service.NewScrapeService(registry)
+	// registry := scraper.NewRegistry()
+	// scrapeService := service.NewScrapeService(registry)
 
-	ctx := context.Background()
+	// ctx := context.Background()
 
-	articles, err := scrapeService.ScrapeAll(ctx)
-	if err != nil {
-		slog.Error("failed to scrape articles", "error", err)
-		os.Exit(1)
-	}
+	// articles, err := scrapeService.ScrapeAll(ctx)
+	// if err != nil {
+	// 	slog.Error("failed to scrape articles", "error", err)
+	// 	os.Exit(1)
+	// }
 
-	slog.Info("scraping completed", "total_articles", len(articles))
+	// slog.Info("scraping completed", "total_articles", len(articles))
 
-	for _, article := range articles {
-		fmt.Printf("Source: %s | Language: %s | Title: %s\n",
-			article.SourceName,
-			article.Language,
-			article.Title)
-	}
+	// for _, article := range articles {
+	// 	fmt.Printf("Source: %s | Language: %s | Title: %s\n",
+	// 		article.SourceName,
+	// 		article.Language,
+	// 		article.Title)
+	// }
 
 }

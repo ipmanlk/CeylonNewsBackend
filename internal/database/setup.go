@@ -3,16 +3,16 @@ package database
 import (
 	"database/sql"
 	"embed"
-	"log"
 
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/pressly/goose/v3"
 )
 
 //go:embed migrations/*.sql
 var migrationsFS embed.FS
 
-// RunMigrations runs all database migrations
-func RunMigrations(db *sql.DB) error {
+// InitializeDatabase initializes the database by running migrations
+func InitializeDatabase(db *sql.DB) error {
 	// Set the base filesystem for migrations
 	goose.SetBaseFS(migrationsFS)
 
@@ -25,6 +25,5 @@ func RunMigrations(db *sql.DB) error {
 		return err
 	}
 
-	log.Println("Database migrations completed successfully")
 	return nil
 }

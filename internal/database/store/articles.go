@@ -1,0 +1,538 @@
+package store
+
+import (
+	"database/sql"
+	"fmt"
+	"strings"
+	"time"
+
+	"ipmanlk/cnapi/internal/model"
+)
+
+type ArticlesStore struct {
+	db *sql.DB
+}
+
+func NewArticlesStore(db *sql.DB) *ArticlesStore {
+	return &ArticlesStore{db: db}
+}
+
+// Create inserts a new article into the database from a scraped article
+func (s *ArticlesStore) Create(scrapedArticle model.ScrapedArticle) (int64, error) {
+	query := `
+		INSERT INTO articles (source_name, title, url, content, image_url, language, published_at, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`
+
+	now := time.Now()
+
+	result, err := s.db.Exec(query,
+		scrapedArticle.SourceName,
+		scrapedArticle.Title,
+		scrapedArticle.URL,
+		scrapedArticle.Content,
+		scrapedArticle.ImageURL,
+		string(scrapedArticle.Language),
+		scrapedArticle.PublishedAt,
+		now,
+		now,
+	)
+
+	if err != nil {
+		return 0, fmt.Errorf("failed to create article: %w", err)
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get last insert id: %w", err)
+	}
+
+	return id, nil
+}
+
+// Upsert inserts a new article or updates an existing one based on URL from a scraped article
+func (s *ArticlesStore) Upsert(scrapedArticle model.ScrapedArticle) (int64, error) {
+	query := `
+		INSERT INTO articles (source_name, title, url, content, image_url, language, published_at, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT(url) DO UPDATE SET
+			source_name = excluded.source_name,
+			title = excluded.title,
+			content = excluded.content,
+			image_url = excluded.image_url,
+			language = excluded.language,
+			published_at = excluded.published_at,
+			updated_at = excluded.updated_at
+	`
+
+	now := time.Now()
+
+	result, err := s.db.Exec(query,
+		scrapedArticle.SourceName,
+		scrapedArticle.Title,
+		scrapedArticle.URL,
+		scrapedArticle.Content,
+		scrapedArticle.ImageURL,
+		string(scrapedArticle.Language),
+		scrapedArticle.PublishedAt,
+		now,
+		now,
+	)
+
+	if err != nil {
+		return 0, fmt.Errorf("failed to upsert article: %w", err)
+	}
+
+	// For upsert, we need to get the ID differently
+	// If it was an insert, we can get LastInsertId
+	// If it was an update, we need to query by URL
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rowsAffected > 0 {
+		// Try to get the ID from LastInsertId first (for inserts)
+		id, err := result.LastInsertId()
+		if err == nil && id > 0 {
+			return id, nil
+		}
+
+		// If LastInsertId didn't work (for updates), query by URL
+		existingArticle, err := s.GetByURL(scrapedArticle.URL)
+		if err != nil {
+			return 0, fmt.Errorf("failed to get updated article: %w", err)
+		}
+		if existingArticle != nil {
+			return existingArticle.ID, nil
+		}
+	}
+
+	return 0, fmt.Errorf("no article was affected by upsert operation")
+}
+
+// BulkCreate inserts multiple articles in a single transaction from scraped articles
+func (s *ArticlesStore) BulkCreate(scrapedArticles []model.ScrapedArticle) ([]int64, error) {
+	if len(scrapedArticles) == 0 {
+		return []int64{}, nil
+	}
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	query := `
+		INSERT INTO articles (source_name, title, url, content, image_url, language, published_at, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`
+
+	stmt, err := tx.Prepare(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare statement: %w", err)
+	}
+	defer stmt.Close()
+
+	now := time.Now()
+	ids := make([]int64, 0, len(scrapedArticles))
+
+	for _, sa := range scrapedArticles {
+		result, err := stmt.Exec(
+			sa.SourceName,
+			sa.Title,
+			sa.URL,
+			sa.Content,
+			sa.ImageURL,
+			string(sa.Language),
+			sa.PublishedAt,
+			now,
+			now,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to insert article: %w", err)
+		}
+
+		id, err := result.LastInsertId()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get last insert id: %w", err)
+		}
+
+		ids = append(ids, id)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return ids, nil
+}
+
+// BulkUpsert upserts multiple articles in a single transaction from scraped articles
+func (s *ArticlesStore) BulkUpsert(scrapedArticles []model.ScrapedArticle) ([]int64, error) {
+	if len(scrapedArticles) == 0 {
+		return []int64{}, nil
+	}
+
+	tx, err := s.db.Begin()
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	query := `
+		INSERT INTO articles (source_name, title, url, content, image_url, language, published_at, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT(url) DO UPDATE SET
+			source_name = excluded.source_name,
+			title = excluded.title,
+			content = excluded.content,
+			image_url = excluded.image_url,
+			language = excluded.language,
+			published_at = excluded.published_at,
+			updated_at = excluded.updated_at
+	`
+
+	stmt, err := tx.Prepare(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare statement: %w", err)
+	}
+	defer stmt.Close()
+
+	now := time.Now()
+	ids := make([]int64, 0, len(scrapedArticles))
+
+	for _, sa := range scrapedArticles {
+		result, err := stmt.Exec(
+			sa.SourceName,
+			sa.Title,
+			sa.URL,
+			sa.Content,
+			sa.ImageURL,
+			string(sa.Language),
+			sa.PublishedAt,
+			now,
+			now,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to upsert article: %w", err)
+		}
+
+		// Try to get the ID from LastInsertId first (for inserts)
+		id, err := result.LastInsertId()
+		if err == nil && id > 0 {
+			ids = append(ids, id)
+		} else {
+			// If LastInsertId didn't work (for updates), query by URL
+			existingArticle, err := s.GetByURL(sa.URL)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get updated article: %w", err)
+			}
+			if existingArticle != nil {
+				ids = append(ids, existingArticle.ID)
+			}
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return ids, nil
+}
+
+// GetByID retrieves an article by its ID
+func (s *ArticlesStore) GetByID(id int64) (*model.Article, error) {
+	query := `
+		SELECT id, source_name, title, url, content, image_url, language, published_at, created_at, updated_at
+		FROM articles
+		WHERE id = ?
+	`
+
+	article := &model.Article{}
+	err := s.db.QueryRow(query, id).Scan(
+		&article.ID,
+		&article.SourceName,
+		&article.Title,
+		&article.URL,
+		&article.Content,
+		&article.ImageURL,
+		&article.Language,
+		&article.PublishedAt,
+		&article.CreatedAt,
+		&article.UpdatedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get article by id: %w", err)
+	}
+
+	return article, nil
+}
+
+// GetByURL retrieves an article by its URL
+func (s *ArticlesStore) GetByURL(url string) (*model.Article, error) {
+	query := `
+		SELECT id, source_name, title, url, content, image_url, language, published_at, created_at, updated_at
+		FROM articles
+		WHERE url = ?
+	`
+
+	article := &model.Article{}
+	err := s.db.QueryRow(query, url).Scan(
+		&article.ID,
+		&article.SourceName,
+		&article.Title,
+		&article.URL,
+		&article.Content,
+		&article.ImageURL,
+		&article.Language,
+		&article.PublishedAt,
+		&article.CreatedAt,
+		&article.UpdatedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get article by url: %w", err)
+	}
+
+	return article, nil
+}
+
+// List retrieves articles with optional filtering
+func (s *ArticlesStore) List(filter model.ArticleFilter) ([]*model.Article, error) {
+	query, args := s.buildListQuery(filter)
+
+	rows, err := s.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query articles: %w", err)
+	}
+	defer rows.Close()
+
+	var articles []*model.Article
+	for rows.Next() {
+		article := &model.Article{}
+		err := rows.Scan(
+			&article.ID,
+			&article.SourceName,
+			&article.Title,
+			&article.URL,
+			&article.Content,
+			&article.ImageURL,
+			&article.Language,
+			&article.PublishedAt,
+			&article.CreatedAt,
+			&article.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan article: %w", err)
+		}
+		articles = append(articles, article)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating rows: %w", err)
+	}
+
+	return articles, nil
+}
+
+// Count returns the total number of articles matching the filter
+func (s *ArticlesStore) Count(filter model.ArticleFilter) (int64, error) {
+	query, args := s.buildCountQuery(filter)
+
+	var count int64
+	err := s.db.QueryRow(query, args...).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count articles: %w", err)
+	}
+
+	return count, nil
+}
+
+// ListPaginated retrieves paginated articles with filtering
+func (s *ArticlesStore) ListPaginated(filter model.ArticleFilter) (*model.PaginatedResult[*model.Article], error) {
+	// Get total count
+	total, err := s.Count(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get articles
+	articles, err := s.List(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	page := (filter.Offset / filter.Limit) + 1
+	if filter.Limit == 0 {
+		page = 1
+	}
+
+	return model.NewPaginatedResult(articles, total, page, filter.Limit), nil
+}
+
+// Update updates an existing article
+func (s *ArticlesStore) Update(article *model.Article) error {
+	query := `
+		UPDATE articles 
+		SET source_name = ?, title = ?, url = ?, content = ?, image_url = ?, language = ?, 
+		    published_at = ?, updated_at = ?
+		WHERE id = ?
+	`
+
+	article.UpdatedAt = time.Now()
+
+	result, err := s.db.Exec(query,
+		article.SourceName,
+		article.Title,
+		article.URL,
+		article.Content,
+		article.ImageURL,
+		article.Language,
+		article.PublishedAt,
+		article.UpdatedAt,
+		article.ID,
+	)
+
+	if err != nil {
+		return fmt.Errorf("failed to update article: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("article with id %d not found", article.ID)
+	}
+
+	return nil
+}
+
+// Delete removes an article by ID
+func (s *ArticlesStore) Delete(id int64) error {
+	query := `DELETE FROM articles WHERE id = ?`
+
+	result, err := s.db.Exec(query, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete article: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("article with id %d not found", id)
+	}
+
+	return nil
+}
+
+// ExistsByURL checks if an article with the given URL exists
+func (s *ArticlesStore) ExistsByURL(url string) (bool, error) {
+	query := `SELECT 1 FROM articles WHERE url = ? LIMIT 1`
+
+	var exists int
+	err := s.db.QueryRow(query, url).Scan(&exists)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, fmt.Errorf("failed to check article existence: %w", err)
+	}
+
+	return true, nil
+}
+
+// buildListQuery builds the SQL query for listing articles
+func (s *ArticlesStore) buildListQuery(filter model.ArticleFilter) (string, []interface{}) {
+	var conditions []string
+	var args []interface{}
+
+	if filter.Language != nil {
+		conditions = append(conditions, "language = ?")
+		args = append(args, *filter.Language)
+	}
+
+	if filter.SourceName != nil {
+		conditions = append(conditions, "source_name = ?")
+		args = append(args, *filter.SourceName)
+	}
+
+	if filter.StartDate != nil {
+		conditions = append(conditions, "published_at >= ?")
+		args = append(args, *filter.StartDate)
+	}
+
+	if filter.EndDate != nil {
+		conditions = append(conditions, "published_at <= ?")
+		args = append(args, *filter.EndDate)
+	}
+
+	query := `
+		SELECT id, source_name, title, url, content, image_url, language, published_at, created_at, updated_at
+		FROM articles
+	`
+
+	if len(conditions) > 0 {
+		query += " WHERE " + strings.Join(conditions, " AND ")
+	}
+
+	query += " ORDER BY published_at DESC"
+
+	if filter.Limit > 0 {
+		query += fmt.Sprintf(" LIMIT %d", filter.Limit)
+	}
+
+	if filter.Offset > 0 {
+		query += fmt.Sprintf(" OFFSET %d", filter.Offset)
+	}
+
+	return query, args
+}
+
+// buildCountQuery builds the SQL query for counting articles
+func (s *ArticlesStore) buildCountQuery(filter model.ArticleFilter) (string, []interface{}) {
+	var conditions []string
+	var args []interface{}
+
+	if filter.Language != nil {
+		conditions = append(conditions, "language = ?")
+		args = append(args, *filter.Language)
+	}
+
+	if filter.SourceName != nil {
+		conditions = append(conditions, "source_name = ?")
+		args = append(args, *filter.SourceName)
+	}
+
+	if filter.StartDate != nil {
+		conditions = append(conditions, "published_at >= ?")
+		args = append(args, *filter.StartDate)
+	}
+
+	if filter.EndDate != nil {
+		conditions = append(conditions, "published_at <= ?")
+		args = append(args, *filter.EndDate)
+	}
+
+	query := `SELECT COUNT(*) FROM articles`
+
+	if len(conditions) > 0 {
+		query += " WHERE " + strings.Join(conditions, " AND ")
+	}
+
+	return query, args
+}
