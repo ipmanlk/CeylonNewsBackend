@@ -30,6 +30,25 @@ migrate-down:
 	@echo "Running database migrations down..."
 	goose -dir internal/database/migrations sqlite3 data/db.sqlite down
 
-test-scrapers:
-	@echo "Running scraper source tests..."
-	$(GO_CMD) test -count=1 -timeout 5m ./internal/scraper/source/...
+test-sources:
+	@echo "Running scraper source tests individually..."
+	@for file in internal/scraper/source/*_test.go; do \
+		# Extract the clean filename (e.g., 'bbc' from 'bbc_test.go') \
+		name=$$(basename $$file _test.go); \
+		echo ""; \
+		echo "=================================================="; \
+		echo "Testing source: $$name"; \
+		echo "=================================================="; \
+		# Run tests in the package that match the filename (case-insensitive) \
+		$(GO_CMD) test -v -count=1 -timeout 30s ./internal/scraper/source -run "(?i)$$name"; \
+	done
+
+test-source:
+	@# Check if the 's' variable was provided
+	@if [ -z "$(s)" ]; then \
+		echo "Error: Please specify a source name. Example: make test-source s=bbc"; \
+		exit 1; \
+	fi
+	@echo "Targeting tests matching: $(s)"
+	# Run tests in the package matching the input 's' (case-insensitive)
+	$(GO_CMD) test -v -count=1 -timeout 30s ./internal/scraper/source -run "(?i)$(s)"
