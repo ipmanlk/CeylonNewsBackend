@@ -3,7 +3,7 @@ GO_CMD = go
 GO_BUILD = $(GO_CMD) build
 OUTPUT_DIR = bin
 
-.PHONY: dev-run dev build clean migrate-up migrate-down
+.PHONY: dev-run dev build clean migrate-up migrate-down test-scrapers
 
 dev-run:
 	@echo "Running development server..."
@@ -29,3 +29,7 @@ migrate-up:
 migrate-down:
 	@echo "Running database migrations down..."
 	goose -dir internal/database/migrations sqlite3 data/db.sqlite down
+
+test-scrapers:
+	@echo "Running scraper source tests..."
+	$(GO_CMD) test -count=1 -timeout 5m ./internal/scraper/source/...
