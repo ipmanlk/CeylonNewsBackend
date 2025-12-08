@@ -61,7 +61,7 @@ func (s *DailyMirrorScraper) scrapeEn(ctx context.Context) ([]model.ScrapedArtic
 		title := strings.ReplaceAll(item.Title, " - Breaking News | Daily Mirror", "")
 
 		// Extract article content using the RSS item
-		article, err := s.fetcher.ExtractArticleFromRSSItem(ctx, item)
+		article, err := s.fetcher.ExtractArticleFromRSSItem(ctx, item, true)
 		if err != nil {
 			slog.Warn("failed to extract article", "scraper", "Daily Mirror", "url", item.Link, "error", err)
 			continue
