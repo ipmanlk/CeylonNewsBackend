@@ -7,3 +7,4 @@ services:
       - FLASK_ENV=production
     restart: unless-stopped
     shm_size: '2gb'  # Shared memory for Chrome
+    mem_limit: 2g
