@@ -47,12 +47,11 @@ func (s *BBCScraper) scrapeEn(ctx context.Context) ([]model.ScrapedArticle, erro
 		return nil, err
 	}
 
-	articleLinks := s.fetcher.ExtractLinks(doc, "a[class*='hMvGwj']", "/news/articles/")
+	articleLinks := s.fetcher.ExtractLinks(doc, "a", "/news/articles/")
 	if len(articleLinks) > 5 {
 		articleLinks = articleLinks[:5]
 	}
 
-	// Convert relative URLs to absolute URLs
 	for i, link := range articleLinks {
 		if strings.HasPrefix(link, "/") {
 			articleLinks[i] = "https://www.bbc.com" + link
@@ -68,7 +67,7 @@ func (s *BBCScraper) scrapeSi(ctx context.Context) ([]model.ScrapedArticle, erro
 		return nil, err
 	}
 
-	articleLinks := s.fetcher.ExtractLinks(doc, "a[class*='bbc-1i4ie53']", "https://www.bbc.com/sinhala/articles/")
+	articleLinks := s.fetcher.ExtractLinks(doc, "a", "https://www.bbc.com/sinhala/articles/")
 	if len(articleLinks) > 5 {
 		articleLinks = articleLinks[:5]
 	}
@@ -82,7 +81,7 @@ func (s *BBCScraper) scrapeTa(ctx context.Context) ([]model.ScrapedArticle, erro
 		return nil, err
 	}
 
-	articleLinks := s.fetcher.ExtractLinks(doc, "div.promo-text a[class*='bbc-1i4ie53']", "https://www.bbc.com/tamil/articles/")
+	articleLinks := s.fetcher.ExtractLinks(doc, "a", "https://www.bbc.com/tamil/articles/")
 	if len(articleLinks) > 5 {
 		articleLinks = articleLinks[:5]
 	}
