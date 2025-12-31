@@ -3,7 +3,7 @@ GO_CMD = go
 GO_BUILD = $(GO_CMD) build
 OUTPUT_DIR = bin
 
-.PHONY: dev-run dev build clean migrate-up migrate-down test-scrapers
+.PHONY: dev-run dev build clean migrate-up migrate-down test-sources test-source test-store
 
 dev-run:
 	@echo "Running development server..."
@@ -52,3 +52,8 @@ test-source:
 	@echo "Targeting tests matching: $(s)"
 	# Run tests in the package matching the input 's' (case-insensitive)
 	$(GO_CMD) test -v -count=1 -timeout 240s ./internal/scraper/source -run "(?i)$(s)"
+
+test-store:
+	@echo "Running database store tests..."
+	$(GO_CMD) test -v -count=1 --tags "fts5" -timeout 30s ./internal/database/store
+
