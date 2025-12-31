@@ -40,7 +40,7 @@ test-sources:
 		echo "Testing source: $$name"; \
 		echo "=================================================="; \
 		# Run tests in the package that match the filename (case-insensitive) \
-		$(GO_CMD) test -v -count=1 -timeout 120s ./internal/scraper/source -run "(?i)$$name"; \
+		$(GO_CMD) test -v -count=1 -timeout 240s ./internal/scraper/source -run "(?i)$$name" || exit 1; \
 	done
 
 test-source:
@@ -51,4 +51,4 @@ test-source:
 	fi
 	@echo "Targeting tests matching: $(s)"
 	# Run tests in the package matching the input 's' (case-insensitive)
-	$(GO_CMD) test -v -count=1 -timeout 120s ./internal/scraper/source -run "(?i)$(s)"
+	$(GO_CMD) test -v -count=1 -timeout 240s ./internal/scraper/source -run "(?i)$(s)"

@@ -36,7 +36,7 @@ func (s *IslandScraper) Scrape(ctx context.Context, language model.Language) ([]
 
 func (s *IslandScraper) scrapeEn(ctx context.Context) ([]model.ScrapedArticle, error) {
 	// Fetch RSS feed
-	rssItems, err := s.fetcher.FetchRSS(ctx, "http://island.lk/feed/", 5)
+	rssItems, err := s.fetcher.FetchRSS(ctx, "https://island.lk/feed/", 5)
 	if err != nil {
 		return nil, err
 	}

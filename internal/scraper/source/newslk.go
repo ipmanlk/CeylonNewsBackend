@@ -56,9 +56,8 @@ func (s *NewsLKScraper) scrapeEn(ctx context.Context) ([]model.ScrapedArticle, e
 		}
 	}
 
-	// Limit to 5 articles
-	if len(articleLinks) > 5 {
-		articleLinks = articleLinks[:5]
+	if len(articleLinks) > 2 {
+		articleLinks = articleLinks[:2]
 	}
 
 	return s.scrapeArticles(ctx, articleLinks, model.LangEn)
@@ -81,9 +80,8 @@ func (s *NewsLKScraper) scrapeSi(ctx context.Context) ([]model.ScrapedArticle, e
 		}
 	}
 
-	// Limit to 5 articles
-	if len(articleLinks) > 5 {
-		articleLinks = articleLinks[:5]
+	if len(articleLinks) > 2 {
+		articleLinks = articleLinks[:2]
 	}
 
 	return s.scrapeArticles(ctx, articleLinks, model.LangSi)
@@ -106,9 +104,8 @@ func (s *NewsLKScraper) scrapeTa(ctx context.Context) ([]model.ScrapedArticle, e
 		}
 	}
 
-	// Limit to 5 articles
-	if len(articleLinks) > 5 {
-		articleLinks = articleLinks[:5]
+	if len(articleLinks) > 2 {
+		articleLinks = articleLinks[:2]
 	}
 
 	return s.scrapeArticles(ctx, articleLinks, model.LangTa)
