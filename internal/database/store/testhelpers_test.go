@@ -8,7 +8,7 @@ import (
 
 	"ipmanlk/cnapi/internal/model"
 
-	_ "modernc.org/sqlite"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // setupTestDB creates an in-memory SQLite database with migrations applied

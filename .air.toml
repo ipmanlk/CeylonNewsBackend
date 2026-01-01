@@ -4,7 +4,7 @@ tmp_dir = ".tmp" # hidden tmp folder
 
 [build]
   bin = ".tmp/main"
-  cmd = "go build -o .tmp/main ./cmd/server"
+  cmd = "go build --tags \"fts5\" -o .tmp/main ./cmd/server"
   include_ext = ["go"]
   exclude_dir = ["browser-api", "data", "node_modules", "dist", ".tmp"]
   exclude_file = []

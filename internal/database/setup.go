@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"embed"
 
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/pressly/goose/v3"
-	_ "modernc.org/sqlite"
 )
 
 //go:embed migrations/*.sql
