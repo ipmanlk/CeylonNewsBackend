@@ -7,21 +7,19 @@ import (
 	"time"
 )
 
-// Config holds all application configuration
 type Config struct {
 	Database  DatabaseConfig
 	Fetcher   FetcherConfig
 	Logger    LoggerConfig
 	Scheduler SchedulerConfig
+	HTTP      HTTPConfig
 }
 
-// SchedulerConfig holds scheduler-related configuration
 type SchedulerConfig struct {
-	ScrapeInterval time.Duration // How often to scrape all sources
-	Enabled        bool          // Whether to enable automatic scraping
+	ScrapeInterval time.Duration
+	Enabled        bool
 }
 
-// DatabaseConfig holds database-related configuration
 type DatabaseConfig struct {
 	Driver          string
 	DSN             string
@@ -30,7 +28,6 @@ type DatabaseConfig struct {
 	ConnMaxLifetime time.Duration
 }
 
-// FetcherConfig holds fetcher-related configuration
 type FetcherConfig struct {
 	HTTPTimeout     time.Duration
 	BrowserAPIURL   string
@@ -38,18 +35,25 @@ type FetcherConfig struct {
 	BrowserWaitTime int
 }
 
-// LoggerConfig holds logger-related configuration
 type LoggerConfig struct {
 	Level     string
-	Format    string // "json" or "text"
+	Format    string
 	AddSource bool
 }
 
-// Load loads configuration from environment variables with sensible defaults
+type HTTPConfig struct {
+	Host            string
+	Port            int
+	ReadTimeout     time.Duration
+	WriteTimeout    time.Duration
+	IdleTimeout     time.Duration
+	ShutdownTimeout time.Duration
+}
+
 func Load() (*Config, error) {
 	cfg := &Config{
 		Database: DatabaseConfig{
-			Driver:          getEnv("DB_DRIVER", "sqlite"),
+			Driver:          getEnv("DB_DRIVER", "sqlite3"),
 			DSN:             getEnv("DB_DSN", "./data/db.sqlite"),
 			MaxOpenConns:    getEnvInt("DB_MAX_OPEN_CONNS", 25),
 			MaxIdleConns:    getEnvInt("DB_MAX_IDLE_CONNS", 5),
@@ -70,6 +74,14 @@ func Load() (*Config, error) {
 			ScrapeInterval: getEnvDuration("SCHEDULER_SCRAPE_INTERVAL", 1*time.Hour),
 			Enabled:        getEnvBool("SCHEDULER_ENABLED", true),
 		},
+		HTTP: HTTPConfig{
+			Host:            getEnv("HTTP_HOST", "0.0.0.0"),
+			Port:            getEnvInt("HTTP_PORT", 8080),
+			ReadTimeout:     getEnvDuration("HTTP_READ_TIMEOUT", 30*time.Second),
+			WriteTimeout:    getEnvDuration("HTTP_WRITE_TIMEOUT", 30*time.Second),
+			IdleTimeout:     getEnvDuration("HTTP_IDLE_TIMEOUT", 120*time.Second),
+			ShutdownTimeout: getEnvDuration("HTTP_SHUTDOWN_TIMEOUT", 15*time.Second),
+		},
 	}
 
 	if err := cfg.Validate(); err != nil {
@@ -79,7 +91,6 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
-// Validate validates the configuration
 func (c *Config) Validate() error {
 	if c.Database.DSN == "" {
 		return fmt.Errorf("database DSN is required")
@@ -107,10 +118,12 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("scrape interval must be at least 1 minute, got: %v", c.Scheduler.ScrapeInterval)
 	}
 
+	if c.HTTP.Port < 1 || c.HTTP.Port > 65535 {
+		return fmt.Errorf("invalid HTTP port: %d (must be between 1 and 65535)", c.HTTP.Port)
+	}
+
 	return nil
 }
-
-// Helper functions to read environment variables with defaults
 
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
@@ -151,6 +164,10 @@ func getEnvDuration(key string, defaultValue time.Duration) time.Duration {
 	valueStr := os.Getenv(key)
 	if valueStr == "" {
 		return defaultValue
+	}
+
+	if valueStr == "0" {
+		return 0
 	}
 
 	value, err := time.ParseDuration(valueStr)

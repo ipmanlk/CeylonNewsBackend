@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 
+	"ipmanlk/cnapi/internal/api"
 	"ipmanlk/cnapi/internal/config"
 	"ipmanlk/cnapi/internal/database"
 	"ipmanlk/cnapi/internal/fetcher"
@@ -17,12 +18,13 @@ import (
 
 // App holds all application dependencies and services
 type App struct {
-	Config    *config.Config
-	DB        *sql.DB
-	Store     *database.Store
-	Services  *Services
-	Scheduler *scheduler.Scheduler
-	Logger    *slog.Logger
+	Config     *config.Config
+	DB         *sql.DB
+	Store      *database.Store
+	Services   *Services
+	Scheduler  *scheduler.Scheduler
+	HTTPServer *api.Server
+	Logger     *slog.Logger
 }
 
 // Services holds all application services
@@ -71,13 +73,24 @@ func New(ctx context.Context) (*App, error) {
 		cfg.Scheduler.ScrapeInterval,
 	)
 
+	httpConfig := api.Config{
+		Host:            cfg.HTTP.Host,
+		Port:            cfg.HTTP.Port,
+		ReadTimeout:     cfg.HTTP.ReadTimeout,
+		WriteTimeout:    cfg.HTTP.WriteTimeout,
+		IdleTimeout:     cfg.HTTP.IdleTimeout,
+		ShutdownTimeout: cfg.HTTP.ShutdownTimeout,
+	}
+	httpServer := api.NewServer(services.Article, services.Search, httpConfig)
+
 	app := &App{
-		Config:    cfg,
-		DB:        db,
-		Store:     store,
-		Services:  services,
-		Scheduler: sched,
-		Logger:    logger,
+		Config:     cfg,
+		DB:         db,
+		Store:      store,
+		Services:   services,
+		Scheduler:  sched,
+		HTTPServer: httpServer,
+		Logger:     logger,
 	}
 
 	slog.Info("application initialized successfully")
@@ -86,8 +99,15 @@ func New(ctx context.Context) (*App, error) {
 }
 
 // Close gracefully shuts down the application
-func (a *App) Close() error {
+func (a *App) Close(ctx context.Context) error {
 	slog.Info("shutting down application")
+
+	// Stop HTTP server if running
+	if a.HTTPServer != nil {
+		if err := a.HTTPServer.Shutdown(ctx); err != nil {
+			slog.Error("error stopping HTTP server", "error", err)
+		}
+	}
 
 	// Stop scheduler if running
 	if a.Scheduler != nil && a.Scheduler.IsRunning() {

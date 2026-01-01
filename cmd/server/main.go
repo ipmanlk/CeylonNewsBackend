@@ -8,6 +8,8 @@ import (
 	"syscall"
 
 	"ipmanlk/cnapi/internal/app"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
@@ -22,12 +24,19 @@ func main() {
 		os.Exit(1)
 	}
 	defer func() {
-		if err := application.Close(); err != nil {
+		if err := application.Close(ctx); err != nil {
 			slog.Error("error during application shutdown", "error", err)
 		}
 	}()
 
 	slog.Info("Ceylon News Backend started successfully")
+
+	go func() {
+		if err := application.HTTPServer.Start(); err != nil {
+			slog.Error("HTTP server error", "error", err)
+			cancel()
+		}
+	}()
 
 	// Start scheduler if enabled
 	if application.Config.Scheduler.Enabled {
