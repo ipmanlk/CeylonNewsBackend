@@ -1,7 +1,7 @@
 APP_NAME = cnapi
 GO_CMD = go
 GO_BUILD = $(GO_CMD) build
-OUTPUT_DIR = bin
+OUTPUT_DIR = build
 
 .PHONY: dev-run dev build clean test test-sources test-source test-store help
 
