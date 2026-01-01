@@ -6,8 +6,8 @@ import (
 	"ipmanlk/cnapi/internal/model"
 )
 
-// ArticlesStoreInterface defines the interface for article operations
-type ArticlesStoreInterface interface {
+// ArticlesStore defines the interface for article operations
+type ArticlesStore interface {
 	Create(scrapedArticle model.ScrapedArticle) (int64, error)
 	Upsert(scrapedArticle model.ScrapedArticle) (int64, error)
 	BulkCreate(scrapedArticles []model.ScrapedArticle) ([]int64, error)
@@ -22,8 +22,8 @@ type ArticlesStoreInterface interface {
 	ExistsByURL(url string) (bool, error)
 }
 
-// SearchStoreInterface defines the interface for search operations
-type SearchStoreInterface interface {
+// SearchStore defines the interface for search operations
+type SearchStore interface {
 	Search(filter model.SearchFilter) ([]*model.SearchResult, error)
 	SearchPaginated(filter model.SearchFilter) (*model.PaginatedResult[*model.SearchResult], error)
 	CountSearchResults(filter model.SearchFilter) (int64, error)
@@ -36,8 +36,8 @@ type SearchStoreInterface interface {
 
 // Store provides access to all database operations
 type Store struct {
-	Articles ArticlesStoreInterface
-	Search   SearchStoreInterface
+	Articles ArticlesStore
+	Search   SearchStore
 }
 
 // NewStore creates a new database store with all required stores

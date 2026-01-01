@@ -8,7 +8,7 @@ import (
 
 	"ipmanlk/cnapi/internal/model"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 // setupTestDB creates an in-memory SQLite database with migrations applied
@@ -16,7 +16,7 @@ func setupTestDB(t *testing.T) *sql.DB {
 	t.Helper()
 
 	// Create in-memory database with FTS5 support
-	db, err := sql.Open("sqlite3", "file::memory:?mode=memory&_fk=true")
+	db, err := sql.Open("sqlite", "file::memory:?mode=memory&_fk=true")
 	if err != nil {
 		t.Fatalf("failed to open test database: %v", err)
 	}

@@ -3,7 +3,26 @@ GO_CMD = go
 GO_BUILD = $(GO_CMD) build
 OUTPUT_DIR = bin
 
-.PHONY: dev-run dev build clean migrate-up migrate-down test-sources test-source test-store
+.PHONY: dev-run dev build clean test test-sources test-source test-store help
+
+help:
+	@echo "Ceylon News Backend - Available Commands"
+	@echo ""
+	@echo "Development:"
+	@echo "  make dev-run         - Run the application directly"
+	@echo "  make dev             - Run with Air hot-reload"
+	@echo "  make build           - Build production binary"
+	@echo "  make clean           - Remove build artifacts"
+	@echo ""
+	@echo "Testing:"
+	@echo "  make test            - Run all tests"
+	@echo "  make test-sources    - Run all scraper source tests"
+	@echo "  make test-source s=X - Run specific source test (e.g., s=bbc)"
+	@echo "  make test-store      - Run database store tests"
+	@echo ""
+	@echo "Database:"
+	@echo "  make migrate-up      - Run database migrations"
+	@echo "  make migrate-down    - Rollback database migrations"
 
 dev-run:
 	@echo "Running development server..."
@@ -21,6 +40,10 @@ build:
 clean:
 	@echo "Cleaning build artifacts..."
 	rm -rf $(OUTPUT_DIR)
+
+test:
+	@echo "Running all tests..."
+	$(GO_CMD) test -v --tags "fts5" ./...
 
 migrate-up:
 	@echo "Running database migrations up..."

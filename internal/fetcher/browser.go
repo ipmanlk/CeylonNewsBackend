@@ -25,13 +25,13 @@ type BrowserAPIResponse struct {
 	Error   string `json:"error,omitempty"`
 }
 
-func NewBrowserAPIClient() *BrowserAPIClient {
+func NewBrowserAPIClient(apiURL string, timeout time.Duration, waitTime int) *BrowserAPIClient {
 	return &BrowserAPIClient{
-		apiURL: "http://localhost:8000",
+		apiURL: apiURL,
 		client: &http.Client{
-			Timeout: 60 * time.Second,
+			Timeout: timeout,
 		},
-		waitTime: 15,
+		waitTime: waitTime,
 	}
 }
 

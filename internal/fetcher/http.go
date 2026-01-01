@@ -15,15 +15,7 @@ type HTTPClient struct {
 	client *http.Client
 }
 
-func NewHTTPClient() *HTTPClient {
-	return &HTTPClient{
-		client: &http.Client{
-			Timeout: 15 * time.Second,
-		},
-	}
-}
-
-func NewHTTPClientWithTimeout(timeout time.Duration) *HTTPClient {
+func NewHTTPClient(timeout time.Duration) *HTTPClient {
 	return &HTTPClient{
 		client: &http.Client{
 			Timeout: timeout,

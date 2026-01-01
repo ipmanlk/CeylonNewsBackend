@@ -17,11 +17,8 @@ type Registry struct {
 	scrapers []SourceScraper
 }
 
-func NewRegistry() *Registry {
-	httpClient := fetcher.NewHTTPClient()
-	browserClient := fetcher.NewBrowserAPIClient()
-	fetcher := fetcher.NewFetcher(httpClient, browserClient)
-
+// NewRegistry creates a new registry with the provided fetcher
+func NewRegistry(fetcher *fetcher.Fetcher) *Registry {
 	scrapers := []SourceScraper{
 		source.NewBBCScraper(fetcher),
 		source.NewDeranaScraper(fetcher),

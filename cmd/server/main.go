@@ -1,35 +1,46 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
+
+	"ipmanlk/cnapi/internal/app"
 )
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     slog.LevelInfo,
-		AddSource: true,
-	}))
-	slog.SetDefault(logger)
+	// Create context that listens for termination signals
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
 
-	// registry := scraper.NewRegistry()
-	// scrapeService := service.NewScrapeService(registry)
+	// Initialize application
+	application, err := app.New(ctx)
+	if err != nil {
+		slog.Error("failed to initialize application", "error", err)
+		os.Exit(1)
+	}
+	defer func() {
+		if err := application.Close(); err != nil {
+			slog.Error("error during application shutdown", "error", err)
+		}
+	}()
 
-	// ctx := context.Background()
+	slog.Info("Ceylon News Backend started successfully")
 
-	// articles, err := scrapeService.ScrapeAll(ctx)
-	// if err != nil {
-	// 	slog.Error("failed to scrape articles", "error", err)
-	// 	os.Exit(1)
-	// }
+	// Start scheduler if enabled
+	if application.Config.Scheduler.Enabled {
+		if err := application.Scheduler.Start(ctx); err != nil {
+			slog.Error("failed to start scheduler", "error", err)
+			os.Exit(1)
+		}
+		slog.Info("periodic scraping enabled", "interval", application.Config.Scheduler.ScrapeInterval)
+	} else {
+		slog.Info("periodic scraping disabled")
+	}
 
-	// slog.Info("scraping completed", "total_articles", len(articles))
-
-	// for _, article := range articles {
-	// 	fmt.Printf("Source: %s | Language: %s | Title: %s\n",
-	// 		article.SourceName,
-	// 		article.Language,
-	// 		article.Title)
-	// }
-
+	// Wait for termination signal
+	<-ctx.Done()
+	slog.Info("received shutdown signal")
 }

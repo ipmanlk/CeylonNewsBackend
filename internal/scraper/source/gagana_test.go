@@ -2,7 +2,6 @@ package source
 
 import (
 	"context"
-	"ipmanlk/cnapi/internal/fetcher"
 	"ipmanlk/cnapi/internal/model"
 	"testing"
 	"time"
@@ -10,9 +9,7 @@ import (
 
 func TestGaganaScraper(t *testing.T) {
 	// Create fetcher with HTTP client only for testing
-	httpClient := fetcher.NewHTTPClient()
-	browserClient := fetcher.NewBrowserAPIClient()
-	fetcher := fetcher.NewFetcher(httpClient, browserClient)
+	fetcher := createTestFetcher()
 
 	scraper := NewGaganaScraper(fetcher)
 

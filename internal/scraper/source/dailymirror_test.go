@@ -2,7 +2,7 @@ package source
 
 import (
 	"context"
-	"ipmanlk/cnapi/internal/fetcher"
+	
 	"ipmanlk/cnapi/internal/model"
 	"strings"
 	"testing"
@@ -11,9 +11,7 @@ import (
 
 func TestDailyMirrorScraper(t *testing.T) {
 	// Create fetcher with HTTP client only for testing
-	httpClient := fetcher.NewHTTPClient()
-	browserClient := fetcher.NewBrowserAPIClient()
-	fetcher := fetcher.NewFetcher(httpClient, browserClient)
+	fetcher := createTestFetcher()
 
 	scraper := NewDailyMirrorScraper(fetcher)
 

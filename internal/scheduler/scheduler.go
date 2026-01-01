@@ -1,0 +1,212 @@
+package scheduler
+
+import (
+	"context"
+	"fmt"
+	"log/slog"
+	"sync"
+	"time"
+
+	"ipmanlk/cnapi/internal/service"
+)
+
+// Scheduler manages periodic tasks
+type Scheduler struct {
+	scrapeService  service.ScrapeService
+	articleService service.ArticleService
+	interval       time.Duration
+	ticker         *time.Ticker
+	stopCh         chan struct{}
+	doneCh         chan struct{}
+	running        bool
+	mu             sync.RWMutex
+	nextRun        time.Time
+}
+
+// New creates a new scheduler instance
+func New(scrapeService service.ScrapeService, articleService service.ArticleService, interval time.Duration) *Scheduler {
+	return &Scheduler{
+		scrapeService:  scrapeService,
+		articleService: articleService,
+		interval:       interval,
+		running:        false,
+	}
+}
+
+// Start begins the scheduled tasks
+func (s *Scheduler) Start(ctx context.Context) error {
+	s.mu.Lock()
+	if s.running {
+		s.mu.Unlock()
+		return fmt.Errorf("scheduler is already running")
+	}
+
+	slog.Info("starting scheduler", "interval", s.interval)
+
+	s.ticker = time.NewTicker(s.interval)
+	s.stopCh = make(chan struct{})
+	s.doneCh = make(chan struct{})
+	s.running = true
+	s.nextRun = time.Now().Add(s.interval)
+	s.mu.Unlock()
+
+	// Start the ticker goroutine
+	go s.run(ctx)
+
+	slog.Info("scheduler started successfully", "next_run", s.getNextRunTime())
+
+	// Run immediately on startup
+	go s.scrapeAndStoreAll(ctx)
+
+	return nil
+}
+
+// run is the main scheduler loop
+func (s *Scheduler) run(ctx context.Context) {
+	defer close(s.doneCh)
+
+	for {
+		select {
+		case <-s.ticker.C:
+			s.mu.Lock()
+			s.nextRun = time.Now().Add(s.interval)
+			s.mu.Unlock()
+			s.scrapeAndStoreAll(ctx)
+		case <-s.stopCh:
+			s.ticker.Stop()
+			return
+		case <-ctx.Done():
+			s.ticker.Stop()
+			return
+		}
+	}
+}
+
+// Stop gracefully stops the scheduler
+func (s *Scheduler) Stop() error {
+	s.mu.Lock()
+	if !s.running {
+		s.mu.Unlock()
+		return nil
+	}
+	s.mu.Unlock()
+
+	slog.Info("stopping scheduler")
+
+	// Signal the scheduler to stop
+	close(s.stopCh)
+
+	// Wait for the scheduler goroutine to finish
+	<-s.doneCh
+
+	s.mu.Lock()
+	s.running = false
+	s.mu.Unlock()
+
+	slog.Info("scheduler stopped")
+
+	return nil
+}
+
+// scrapeAndStoreAll scrapes articles from all sources and stores them
+func (s *Scheduler) scrapeAndStoreAll(ctx context.Context) {
+	startTime := time.Now()
+	slog.Info("starting scheduled scrape job")
+
+	// Create a context with timeout for this job
+	jobCtx, cancel := context.WithTimeout(ctx, 30*time.Minute)
+	defer cancel()
+
+	// Use concurrent scraping with streaming
+	// 4 workers = 4 concurrent scrapers at a time
+	// 100 batch size = insert every 100 articles
+	resultChan := s.scrapeService.ScrapeAllConcurrent(jobCtx, 4, 100)
+
+	totalScraped := 0
+	totalStored := 0
+	successCount := 0
+	failureCount := 0
+	storeStartTime := time.Now()
+
+	// Process results as they come in
+	for result := range resultChan {
+		if !result.Success {
+			failureCount++
+			continue
+		}
+
+		successCount++
+
+		if len(result.Articles) == 0 {
+			continue
+		}
+
+		totalScraped += len(result.Articles)
+
+		// Store this batch immediately
+		ids, err := s.articleService.BulkUpsert(jobCtx, result.Articles)
+		if err != nil {
+			slog.Error("failed to store articles batch",
+				"error", err,
+				"source", result.Source,
+				"language", result.Language,
+				"article_count", len(result.Articles),
+			)
+			continue
+		}
+
+		totalStored += len(ids)
+
+		slog.Debug("stored articles batch",
+			"source", result.Source,
+			"language", result.Language,
+			"scraped", len(result.Articles),
+			"stored", len(ids),
+		)
+	}
+
+	storeDuration := time.Since(storeStartTime)
+	totalDuration := time.Since(startTime)
+
+	if totalScraped == 0 {
+		slog.Warn("no articles scraped",
+			"duration", totalDuration,
+			"successful_sources", successCount,
+			"failed_sources", failureCount,
+		)
+		return
+	}
+
+	slog.Info("scrape and store job completed successfully",
+		"total_scraped", totalScraped,
+		"stored_count", totalStored,
+		"successful_sources", successCount,
+		"failed_sources", failureCount,
+		"total_duration", totalDuration.Round(time.Second),
+		"store_duration", storeDuration.Round(time.Second),
+		"next_run", s.getNextRunTime(),
+	)
+}
+
+// IsRunning returns whether the scheduler is currently running
+func (s *Scheduler) IsRunning() bool {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.running
+}
+
+// getNextRunTime returns the next scheduled run time
+func (s *Scheduler) getNextRunTime() string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	if !s.running {
+		return "scheduler not running"
+	}
+	return s.nextRun.Format(time.RFC3339)
+}
+
+// RunNow triggers an immediate scrape and store job
+func (s *Scheduler) RunNow(ctx context.Context) {
+	slog.Info("manual scrape job triggered")
+	go s.scrapeAndStoreAll(ctx)
+}
