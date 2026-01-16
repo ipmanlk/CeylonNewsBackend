@@ -490,7 +490,7 @@ func (s *ArticlesStore) buildListQuery(filter model.ArticleFilter) (string, []in
 		query += " WHERE " + strings.Join(conditions, " AND ")
 	}
 
-	query += " ORDER BY published_at DESC"
+	query += " ORDER BY id DESC"
 
 	if filter.Limit > 0 {
 		query += fmt.Sprintf(" LIMIT %d", filter.Limit)

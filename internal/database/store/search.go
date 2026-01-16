@@ -221,11 +221,11 @@ func (s *SearchStore) buildSearchQuery(filter model.SearchFilter) (string, []int
 		query += " WHERE " + strings.Join(conditions, " AND ")
 	}
 
-	// Order by relevance score (rank) for FTS, then by published date
+	// Order by relevance score (rank) for FTS, then by ID
 	if filter.Query != "" {
-		query += " ORDER BY articles_fts.rank, a.published_at DESC"
+		query += " ORDER BY articles_fts.rank, a.id DESC"
 	} else {
-		query += " ORDER BY a.published_at DESC"
+		query += " ORDER BY a.id DESC"
 	}
 
 	if filter.Limit > 0 {
@@ -333,7 +333,7 @@ func (s *SearchStore) GetRecentArticles(language *string, sourceNames []string, 
 		query += " WHERE " + strings.Join(conditions, " AND ")
 	}
 
-	query += " ORDER BY published_at DESC"
+	query += " ORDER BY id DESC"
 
 	if limit > 0 {
 		query += fmt.Sprintf(" LIMIT %d", limit)

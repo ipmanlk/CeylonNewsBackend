@@ -36,37 +36,30 @@ type Services struct {
 
 // New creates and initializes a new application instance
 func New(ctx context.Context) (*App, error) {
-	// Load configuration
 	cfg, err := config.Load()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load configuration: %w", err)
 	}
 
-	// Setup logger
 	logger := setupLogger(cfg.Logger)
 	slog.SetDefault(logger)
 
 	slog.Info("starting application initialization")
 
-	// Initialize database
 	db, err := initDatabase(cfg.Database)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
 
-	// Run migrations
 	if err := database.InitializeDatabase(db); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("failed to run database migrations: %w", err)
 	}
 
-	// Create store
 	store := database.NewStore(db)
 
-	// Initialize services
 	services := initServices(cfg, store)
 
-	// Initialize scheduler
 	sched := scheduler.New(
 		services.Scrape,
 		services.Article,
@@ -164,12 +157,10 @@ func initDatabase(cfg config.DatabaseConfig) (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
-	// Configure connection pool
 	db.SetMaxOpenConns(cfg.MaxOpenConns)
 	db.SetMaxIdleConns(cfg.MaxIdleConns)
 	db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
 
-	// Verify connection
 	if err := db.Ping(); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("failed to ping database: %w", err)
@@ -186,7 +177,6 @@ func initDatabase(cfg config.DatabaseConfig) (*sql.DB, error) {
 
 // initServices initializes all application services with their dependencies
 func initServices(cfg *config.Config, store *database.Store) *Services {
-	// Initialize fetcher dependencies
 	httpClient := fetcher.NewHTTPClient(cfg.Fetcher.HTTPTimeout)
 	browserClient := fetcher.NewBrowserAPIClient(
 		cfg.Fetcher.BrowserAPIURL,
@@ -195,10 +185,8 @@ func initServices(cfg *config.Config, store *database.Store) *Services {
 	)
 	fetch := fetcher.NewFetcher(httpClient, browserClient)
 
-	// Initialize scraper registry
 	scraperRegistry := scraper.NewRegistry(fetch)
 
-	// Initialize services
 	return &Services{
 		Scrape:  service.NewScrapeService(scraperRegistry),
 		Article: service.NewArticleService(store.Articles),
