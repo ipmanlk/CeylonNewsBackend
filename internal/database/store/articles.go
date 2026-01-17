@@ -466,9 +466,13 @@ func (s *ArticlesStore) buildListQuery(filter model.ArticleFilter) (string, []in
 		args = append(args, *filter.Language)
 	}
 
-	if filter.SourceName != nil {
-		conditions = append(conditions, "source_name = ?")
-		args = append(args, *filter.SourceName)
+	if len(filter.SourceNames) > 0 {
+		placeholders := make([]string, len(filter.SourceNames))
+		for i, source := range filter.SourceNames {
+			placeholders[i] = "?"
+			args = append(args, source)
+		}
+		conditions = append(conditions, fmt.Sprintf("source_name IN (%s)", strings.Join(placeholders, ", ")))
 	}
 
 	if filter.StartDate != nil {
@@ -513,9 +517,13 @@ func (s *ArticlesStore) buildCountQuery(filter model.ArticleFilter) (string, []i
 		args = append(args, *filter.Language)
 	}
 
-	if filter.SourceName != nil {
-		conditions = append(conditions, "source_name = ?")
-		args = append(args, *filter.SourceName)
+	if len(filter.SourceNames) > 0 {
+		placeholders := make([]string, len(filter.SourceNames))
+		for i, source := range filter.SourceNames {
+			placeholders[i] = "?"
+			args = append(args, source)
+		}
+		conditions = append(conditions, fmt.Sprintf("source_name IN (%s)", strings.Join(placeholders, ", ")))
 	}
 
 	if filter.StartDate != nil {

@@ -29,12 +29,12 @@ type Article struct {
 
 // ArticleFilter represents filters for querying articles
 type ArticleFilter struct {
-	Language   *string    `json:"language,omitempty"`
-	SourceName *string    `json:"source_name,omitempty"`
-	StartDate  *time.Time `json:"start_date,omitempty"`
-	EndDate    *time.Time `json:"end_date,omitempty"`
-	Limit      int        `json:"limit"`
-	Offset     int        `json:"offset"`
+	Language    *string    `json:"language,omitempty"`
+	SourceNames []string   `json:"source_names,omitempty"`
+	StartDate   *time.Time `json:"start_date,omitempty"`
+	EndDate     *time.Time `json:"end_date,omitempty"`
+	Limit       int        `json:"limit"`
+	Offset      int        `json:"offset"`
 }
 
 // SearchFilter represents filters for searching articles

@@ -32,7 +32,7 @@ func (h *ArticleHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	language := httpx.ParseQueryStringPtr(r, "language")
-	sourceName := httpx.ParseQueryStringPtr(r, "source_name")
+	sourceNames := httpx.ParseQueryStrings(r, "source_names")
 
 	startDate, err := httpx.ParseQueryTime(r, "start_date")
 	if err != nil {
@@ -47,12 +47,12 @@ func (h *ArticleHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filter := model.ArticleFilter{
-		Language:   language,
-		SourceName: sourceName,
-		StartDate:  startDate,
-		EndDate:    endDate,
-		Limit:      limit,
-		Offset:     offset,
+		Language:    language,
+		SourceNames: sourceNames,
+		StartDate:   startDate,
+		EndDate:     endDate,
+		Limit:       limit,
+		Offset:      offset,
 	}
 
 	result, err := h.articleService.ListPaginated(r.Context(), filter)
