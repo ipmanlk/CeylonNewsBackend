@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: cnapi
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     environment:
       - DB_DRIVER=sqlite3
       - DB_DSN=./data/db.sqlite
@@ -42,7 +42,7 @@ services:
       dockerfile: Dockerfile
     container_name: browser-api
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - ./browser-api:/app
     networks:
