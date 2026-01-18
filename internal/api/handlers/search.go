@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"ipmanlk/cnapi/internal/api/dto"
 	"ipmanlk/cnapi/internal/model"
 	"ipmanlk/cnapi/pkg/httpx"
 )
@@ -52,13 +53,13 @@ func toSearchResultResponse(result *model.SearchResult) SearchResultResponse {
 }
 
 func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
-	pagination, err := httpx.ParsePaginationParams(r)
+	pagination, err := dto.ParsePaginationRequest(r)
 	if err != nil {
 		httpx.RespondBadRequest(w, err.Error())
 		return
 	}
 
-	searchParams, err := httpx.ParseSearchFilterParams(r)
+	searchParams, err := dto.ParseSearchFilterRequest(r)
 	if err != nil {
 		httpx.RespondBadRequest(w, err.Error())
 		return

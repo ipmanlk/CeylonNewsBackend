@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"ipmanlk/cnapi/internal/api/dto"
 	"ipmanlk/cnapi/internal/model"
 	"ipmanlk/cnapi/pkg/httpx"
 )
@@ -59,13 +60,13 @@ func toArticleListResponse(article *model.Article) ArticleListResponse {
 }
 
 func (h *ArticleHandler) List(w http.ResponseWriter, r *http.Request) {
-	pagination, err := httpx.ParsePaginationParams(r)
+	pagination, err := dto.ParsePaginationRequest(r)
 	if err != nil {
 		httpx.RespondBadRequest(w, err.Error())
 		return
 	}
 
-	filterParams, err := httpx.ParseArticleFilterParams(r)
+	filterParams, err := dto.ParseArticleFilterRequest(r)
 	if err != nil {
 		httpx.RespondBadRequest(w, err.Error())
 		return
