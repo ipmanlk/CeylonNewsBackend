@@ -25,13 +25,11 @@ type ArticlesStore interface {
 
 // SearchStore defines the interface for search operations
 type SearchStore interface {
-	Search(filter model.SearchFilter) ([]*model.SearchResult, error)
-	SearchPaginated(filter model.SearchFilter) (*model.PaginatedResult[*model.SearchResult], error)
+	Search(filter model.SearchFilter) (*model.PaginatedResult[*model.SearchResult], error)
 	CountSearchResults(filter model.SearchFilter) (int64, error)
 	GetAvailableSources() ([]string, error)
 	GetAvailableLanguages() ([]string, error)
 	GetSourcesByLanguage(language string) ([]string, error)
-	SearchWithHighlight(filter model.SearchFilter) ([]*model.SearchResult, error)
 	GetRecentArticles(language *string, sourceNames []string, limit int) ([]*model.Article, error)
 }
 

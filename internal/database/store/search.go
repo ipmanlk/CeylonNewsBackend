@@ -16,7 +16,12 @@ func NewSearchStore(db *sql.DB) *SearchStore {
 	return &SearchStore{db: db}
 }
 
-func (s *SearchStore) Search(filter model.SearchFilter) ([]*model.SearchResult, error) {
+func (s *SearchStore) Search(filter model.SearchFilter) (*model.PaginatedResult[*model.SearchResult], error) {
+	total, err := s.CountSearchResults(filter)
+	if err != nil {
+		return nil, err
+	}
+
 	query, args := s.buildSearchQuery(filter)
 
 	rows, err := s.db.Query(query, args...)
@@ -33,8 +38,6 @@ func (s *SearchStore) Search(filter model.SearchFilter) ([]*model.SearchResult, 
 			&result.SourceName,
 			&result.Title,
 			&result.URL,
-			&result.ContentText,
-			&result.ContentHTML,
 			&result.ImageURL,
 			&result.Language,
 			&result.PublishedAt,
@@ -50,20 +53,6 @@ func (s *SearchStore) Search(filter model.SearchFilter) ([]*model.SearchResult, 
 
 	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("error iterating search rows: %w", err)
-	}
-
-	return results, nil
-}
-
-func (s *SearchStore) SearchPaginated(filter model.SearchFilter) (*model.PaginatedResult[*model.SearchResult], error) {
-	total, err := s.CountSearchResults(filter)
-	if err != nil {
-		return nil, err
-	}
-
-	results, err := s.Search(filter)
-	if err != nil {
-		return nil, err
 	}
 
 	page := (filter.Offset / filter.Limit) + 1
@@ -280,12 +269,6 @@ func (s *SearchStore) escapeFTSQuery(query string) string {
 	// and escape any internal quotes
 	escaped := strings.ReplaceAll(query, `"`, `""`)
 	return `"` + escaped + `"`
-}
-
-func (s *SearchStore) SearchWithHighlight(filter model.SearchFilter) ([]*model.SearchResult, error) {
-	// For now, we'll use the regular search. In the future, we could implement
-	// snippet highlighting using FTS5's snippet() function
-	return s.Search(filter)
 }
 
 func (s *SearchStore) GetRecentArticles(language *string, sourceNames []string, limit int) ([]*model.Article, error) {

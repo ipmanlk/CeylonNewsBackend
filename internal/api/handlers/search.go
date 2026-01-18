@@ -74,7 +74,7 @@ func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 		Offset:      offset,
 	}
 
-	paginatedResult, err := h.searchService.SearchPaginated(r.Context(), filter)
+	paginatedResult, err := h.searchService.Search(r.Context(), filter)
 	if err != nil {
 		slog.Error("failed to search articles", "query", query, "error", err)
 		httpx.RespondInternalError(w, "failed to search articles")

@@ -18,12 +18,8 @@ func NewSearchService(store database.SearchStore) SearchService {
 	}
 }
 
-func (s *searchService) Search(ctx context.Context, filter model.SearchFilter) ([]*model.SearchResult, error) {
+func (s *searchService) Search(ctx context.Context, filter model.SearchFilter) (*model.PaginatedResult[*model.SearchResult], error) {
 	return s.store.Search(filter)
-}
-
-func (s *searchService) SearchPaginated(ctx context.Context, filter model.SearchFilter) (*model.PaginatedResult[*model.SearchResult], error) {
-	return s.store.SearchPaginated(filter)
 }
 
 func (s *searchService) GetAvailableSources() ([]string, error) {

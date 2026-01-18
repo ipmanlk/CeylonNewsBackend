@@ -44,8 +44,7 @@ type ArticleService interface {
 
 // SearchService defines the interface for search operations
 type SearchService interface {
-	Search(ctx context.Context, filter model.SearchFilter) ([]*model.SearchResult, error)
-	SearchPaginated(ctx context.Context, filter model.SearchFilter) (*model.PaginatedResult[*model.SearchResult], error)
+	Search(ctx context.Context, filter model.SearchFilter) (*model.PaginatedResult[*model.SearchResult], error)
 	GetAvailableSources() ([]string, error)
 	GetAvailableLanguages() ([]string, error)
 	GetSourcesByLanguage(language string) ([]string, error)
