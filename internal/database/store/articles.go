@@ -487,9 +487,13 @@ func (s *ArticlesStore) buildListQuery(filter model.ArticleFilter) (string, []in
 	var conditions []string
 	var args []interface{}
 
-	if filter.Language != nil {
-		conditions = append(conditions, "language = ?")
-		args = append(args, *filter.Language)
+	if len(filter.Languages) > 0 {
+		placeholders := make([]string, len(filter.Languages))
+		for i, lang := range filter.Languages {
+			placeholders[i] = "?"
+			args = append(args, lang)
+		}
+		conditions = append(conditions, fmt.Sprintf("language IN (%s)", strings.Join(placeholders, ", ")))
 	}
 
 	if len(filter.SourceNames) > 0 {
@@ -539,9 +543,13 @@ func (s *ArticlesStore) buildCountQuery(filter model.ArticleFilter) (string, []i
 	var conditions []string
 	var args []interface{}
 
-	if filter.Language != nil {
-		conditions = append(conditions, "language = ?")
-		args = append(args, *filter.Language)
+	if len(filter.Languages) > 0 {
+		placeholders := make([]string, len(filter.Languages))
+		for i, lang := range filter.Languages {
+			placeholders[i] = "?"
+			args = append(args, lang)
+		}
+		conditions = append(conditions, fmt.Sprintf("language IN (%s)", strings.Join(placeholders, ", ")))
 	}
 
 	if len(filter.SourceNames) > 0 {

@@ -31,7 +31,7 @@ type Article struct {
 
 // ArticleFilter represents filters for querying articles
 type ArticleFilter struct {
-	Language    *string    `json:"language,omitempty"`
+	Languages   []string   `json:"languages,omitempty"`
 	SourceNames []string   `json:"source_names,omitempty"`
 	StartDate   *time.Time `json:"start_date,omitempty"`
 	EndDate     *time.Time `json:"end_date,omitempty"`
@@ -43,7 +43,7 @@ type ArticleFilter struct {
 // SearchFilter represents filters for searching articles
 type SearchFilter struct {
 	Query       string     `json:"query"`
-	Language    *string    `json:"language,omitempty"`
+	Languages   []string   `json:"languages,omitempty"`
 	SourceNames []string   `json:"source_names,omitempty"`
 	StartDate   *time.Time `json:"start_date,omitempty"`
 	EndDate     *time.Time `json:"end_date,omitempty"`

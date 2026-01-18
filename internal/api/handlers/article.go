@@ -73,7 +73,7 @@ func (h *ArticleHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filter := model.ArticleFilter{
-		Language:    filterParams.Language,
+		Languages:   filterParams.Languages,
 		SourceNames: filterParams.SourceNames,
 		StartDate:   filterParams.StartDate,
 		EndDate:     filterParams.EndDate,

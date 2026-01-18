@@ -163,9 +163,13 @@ func (s *SearchStore) buildSearchQuery(filter model.SearchFilter) (string, []int
 		args = append(args, escapedQuery)
 	}
 
-	if filter.Language != nil {
-		conditions = append(conditions, "a.language = ?")
-		args = append(args, *filter.Language)
+	if len(filter.Languages) > 0 {
+		placeholders := make([]string, len(filter.Languages))
+		for i, lang := range filter.Languages {
+			placeholders[i] = "?"
+			args = append(args, lang)
+		}
+		conditions = append(conditions, fmt.Sprintf("a.language IN (%s)", strings.Join(placeholders, ",")))
 	}
 
 	if len(filter.SourceNames) > 0 {
@@ -226,9 +230,13 @@ func (s *SearchStore) buildSearchCountQuery(filter model.SearchFilter) (string, 
 		args = append(args, escapedQuery)
 	}
 
-	if filter.Language != nil {
-		conditions = append(conditions, "a.language = ?")
-		args = append(args, *filter.Language)
+	if len(filter.Languages) > 0 {
+		placeholders := make([]string, len(filter.Languages))
+		for i, lang := range filter.Languages {
+			placeholders[i] = "?"
+			args = append(args, lang)
+		}
+		conditions = append(conditions, fmt.Sprintf("a.language IN (%s)", strings.Join(placeholders, ",")))
 	}
 
 	if len(filter.SourceNames) > 0 {

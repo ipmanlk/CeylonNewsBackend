@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -86,4 +87,26 @@ func DecodeJSON(r *http.Request, v interface{}) error {
 	}
 
 	return nil
+}
+
+func ParseQueryStringsFromCSV(r *http.Request, key string) []string {
+	value := r.URL.Query().Get(key)
+	if value == "" {
+		return nil
+	}
+
+	parts := strings.Split(value, ",")
+	result := make([]string, 0, len(parts))
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+
+	if len(result) == 0 {
+		return nil
+	}
+
+	return result
 }

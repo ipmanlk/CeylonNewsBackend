@@ -72,7 +72,7 @@ func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 
 	filter := model.SearchFilter{
 		Query:       searchParams.Query,
-		Language:    searchParams.Language,
+		Languages:   searchParams.Languages,
 		SourceNames: searchParams.SourceNames,
 		StartDate:   searchParams.StartDate,
 		EndDate:     searchParams.EndDate,
