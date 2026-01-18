@@ -10,7 +10,6 @@ import (
 	"ipmanlk/cnapi/internal/service"
 )
 
-// Scheduler manages periodic tasks
 type Scheduler struct {
 	scrapeService  service.ScrapeService
 	articleService service.ArticleService
@@ -23,7 +22,6 @@ type Scheduler struct {
 	nextRun        time.Time
 }
 
-// New creates a new scheduler instance
 func New(scrapeService service.ScrapeService, articleService service.ArticleService, interval time.Duration) *Scheduler {
 	return &Scheduler{
 		scrapeService:  scrapeService,
@@ -33,7 +31,6 @@ func New(scrapeService service.ScrapeService, articleService service.ArticleServ
 	}
 }
 
-// Start begins the scheduled tasks
 func (s *Scheduler) Start(ctx context.Context) error {
 	s.mu.Lock()
 	if s.running {
@@ -50,18 +47,15 @@ func (s *Scheduler) Start(ctx context.Context) error {
 	s.nextRun = time.Now().Add(s.interval)
 	s.mu.Unlock()
 
-	// Start the ticker goroutine
 	go s.run(ctx)
 
 	slog.Info("scheduler started successfully", "next_run", s.getNextRunTime())
 
-	// Run immediately on startup
 	go s.scrapeAndStoreAll(ctx)
 
 	return nil
 }
 
-// run is the main scheduler loop
 func (s *Scheduler) run(ctx context.Context) {
 	defer close(s.doneCh)
 
@@ -82,7 +76,6 @@ func (s *Scheduler) run(ctx context.Context) {
 	}
 }
 
-// Stop gracefully stops the scheduler
 func (s *Scheduler) Stop() error {
 	s.mu.Lock()
 	if !s.running {
@@ -93,10 +86,8 @@ func (s *Scheduler) Stop() error {
 
 	slog.Info("stopping scheduler")
 
-	// Signal the scheduler to stop
 	close(s.stopCh)
 
-	// Wait for the scheduler goroutine to finish
 	<-s.doneCh
 
 	s.mu.Lock()
@@ -108,7 +99,6 @@ func (s *Scheduler) Stop() error {
 	return nil
 }
 
-// scrapeAndStoreAll scrapes articles from all sources and stores them
 func (s *Scheduler) scrapeAndStoreAll(ctx context.Context) {
 	startTime := time.Now()
 	slog.Info("starting scheduled scrape job")
@@ -188,14 +178,12 @@ func (s *Scheduler) scrapeAndStoreAll(ctx context.Context) {
 	)
 }
 
-// IsRunning returns whether the scheduler is currently running
 func (s *Scheduler) IsRunning() bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.running
 }
 
-// getNextRunTime returns the next scheduled run time
 func (s *Scheduler) getNextRunTime() string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -205,7 +193,6 @@ func (s *Scheduler) getNextRunTime() string {
 	return s.nextRun.Format(time.RFC3339)
 }
 
-// RunNow triggers an immediate scrape and store job
 func (s *Scheduler) RunNow(ctx context.Context) {
 	slog.Info("manual scrape job triggered")
 	go s.scrapeAndStoreAll(ctx)

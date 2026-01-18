@@ -17,7 +17,6 @@ type Registry struct {
 	scrapers []SourceScraper
 }
 
-// NewRegistry creates a new registry with the provided fetcher
 func NewRegistry(fetcher *fetcher.Fetcher) *Registry {
 	scrapers := []SourceScraper{
 		source.NewBBCScraper(fetcher),

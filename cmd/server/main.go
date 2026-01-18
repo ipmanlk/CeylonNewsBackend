@@ -13,11 +13,9 @@ import (
 )
 
 func main() {
-	// Create context that listens for termination signals
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	// Initialize application
 	application, err := app.New(ctx)
 	if err != nil {
 		slog.Error("failed to initialize application", "error", err)
@@ -38,7 +36,6 @@ func main() {
 		}
 	}()
 
-	// Start scheduler if enabled
 	if application.Config.Scheduler.Enabled {
 		if err := application.Scheduler.Start(ctx); err != nil {
 			slog.Error("failed to start scheduler", "error", err)
@@ -49,7 +46,6 @@ func main() {
 		slog.Info("periodic scraping disabled")
 	}
 
-	// Wait for termination signal
 	<-ctx.Done()
 	slog.Info("received shutdown signal")
 }

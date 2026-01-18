@@ -13,7 +13,8 @@ type ArticleResponse struct {
 	SourceName  string  `json:"source_name"`
 	Title       string  `json:"title"`
 	URL         string  `json:"url"`
-	Content     string  `json:"content"`
+	ContentHTML string  `json:"content_html,omitempty"`
+	ContentText *string `json:"content_text,omitempty"`
 	ImageURL    *string `json:"image_url,omitempty"`
 	Language    string  `json:"language"`
 	PublishedAt string  `json:"published_at"`
@@ -57,6 +58,8 @@ func (h *ArticleHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	includeText := r.URL.Query().Get("include_text") == "true"
+
 	filter := model.ArticleFilter{
 		Language:    language,
 		SourceNames: sourceNames,
@@ -64,6 +67,7 @@ func (h *ArticleHandler) List(w http.ResponseWriter, r *http.Request) {
 		EndDate:     endDate,
 		Limit:       limit,
 		Offset:      offset,
+		IncludeText: includeText,
 	}
 
 	result, err := h.articleService.ListPaginated(r.Context(), filter)
@@ -83,7 +87,10 @@ func (h *ArticleHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	article, err := h.articleService.GetByID(r.Context(), id)
+	includeText := r.URL.Query().Get("include_text") == "true"
+	filter := model.ArticleFilter{IncludeText: includeText}
+
+	article, err := h.articleService.GetByIDWithFilter(r.Context(), id, filter)
 	if err != nil {
 		slog.Error("failed to get article", "id", id, "error", err)
 		httpx.RespondInternalError(w, "failed to retrieve article")
@@ -95,29 +102,20 @@ func (h *ArticleHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	format := r.URL.Query().Get("format")
-	if format == "text" {
-		httpx.RespondJSON(w, http.StatusOK, ArticleResponse{
-			ID:          article.ID,
-			SourceName:  article.SourceName,
-			Title:       article.Title,
-			URL:         article.URL,
-			Content:     article.ContentText,
-			ImageURL:    article.ImageURL,
-			Language:    article.Language,
-			PublishedAt: article.PublishedAt.Format("2006-01-02T15:04:05Z07:00"),
-		})
-		return
-	}
-
-	httpx.RespondJSON(w, http.StatusOK, ArticleResponse{
+	response := ArticleResponse{
 		ID:          article.ID,
 		SourceName:  article.SourceName,
 		Title:       article.Title,
 		URL:         article.URL,
-		Content:     article.ContentHTML,
+		ContentHTML: article.ContentHTML,
 		ImageURL:    article.ImageURL,
 		Language:    article.Language,
 		PublishedAt: article.PublishedAt.Format("2006-01-02T15:04:05Z07:00"),
-	})
+	}
+
+	if includeText {
+		response.ContentText = &article.ContentText
+	}
+
+	httpx.RespondJSON(w, http.StatusOK, response)
 }

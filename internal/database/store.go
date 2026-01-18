@@ -13,6 +13,7 @@ type ArticlesStore interface {
 	BulkCreate(scrapedArticles []model.ScrapedArticle) ([]int64, error)
 	BulkUpsert(scrapedArticles []model.ScrapedArticle) ([]int64, error)
 	GetByID(id int64) (*model.Article, error)
+	GetByIDWithFilter(id int64, filter model.ArticleFilter) (*model.Article, error)
 	GetByURL(url string) (*model.Article, error)
 	List(filter model.ArticleFilter) ([]*model.Article, error)
 	Count(filter model.ArticleFilter) (int64, error)

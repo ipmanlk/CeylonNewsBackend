@@ -28,7 +28,6 @@ func NewFetcher(httpClient *HTTPClient, browserClient *BrowserAPIClient) *Fetche
 	}
 }
 
-// FetchHTML fetches HTML content, optionally using browser API
 func (f *Fetcher) FetchHTML(ctx context.Context, url string, useBrowser ...bool) ([]byte, error) {
 	if len(useBrowser) > 0 && useBrowser[0] {
 		return f.browserClient.FetchHTML(ctx, url)
@@ -36,7 +35,6 @@ func (f *Fetcher) FetchHTML(ctx context.Context, url string, useBrowser ...bool)
 	return f.httpClient.FetchHTML(ctx, url)
 }
 
-// FetchHTMLDoc fetches and parses HTML into goquery document
 func (f *Fetcher) FetchHTMLDoc(ctx context.Context, url string, useBrowser ...bool) (*goquery.Document, error) {
 	if len(useBrowser) > 0 && useBrowser[0] {
 		return f.browserClient.FetchHTMLDoc(ctx, url)
@@ -44,7 +42,6 @@ func (f *Fetcher) FetchHTMLDoc(ctx context.Context, url string, useBrowser ...bo
 	return f.httpClient.FetchHTMLDoc(ctx, url)
 }
 
-// ExtractArticle extracts article content from URL using Trafilatura
 func (f *Fetcher) ExtractArticle(ctx context.Context, url string, useBrowser ...bool) (*trafilatura.ExtractResult, error) {
 	html, err := f.FetchHTML(ctx, url, useBrowser...)
 	if err != nil {
@@ -67,7 +64,6 @@ func (f *Fetcher) ExtractArticle(ctx context.Context, url string, useBrowser ...
 	return result, nil
 }
 
-// FetchRSS fetches and parses RSS feed, returning raw RSS items
 func (f *Fetcher) FetchRSS(ctx context.Context, url string, maxItems int) ([]*gofeed.Item, error) {
 	fp := gofeed.NewParser()
 	feed, err := fp.ParseURLWithContext(url, ctx)
@@ -75,12 +71,10 @@ func (f *Fetcher) FetchRSS(ctx context.Context, url string, maxItems int) ([]*go
 		return nil, fmt.Errorf("failed to parse RSS feed: %w", err)
 	}
 
-	// Limit to first x items (newest)
 	if len(feed.Items) > maxItems {
 		feed.Items = feed.Items[:maxItems]
 	}
 
-	// Filter out items with empty links and duplicates
 	items := make([]*gofeed.Item, 0, len(feed.Items))
 	articleURLs := make(map[string]struct{})
 
@@ -102,7 +96,6 @@ func (f *Fetcher) FetchRSS(ctx context.Context, url string, maxItems int) ([]*go
 	return items, nil
 }
 
-// FetchRSSWithBrowser fetches RSS feed using browser API for JavaScript-rendered feeds
 func (f *Fetcher) FetchRSSWithBrowser(ctx context.Context, url string, maxItems int) ([]*gofeed.Item, error) {
 	html, err := f.browserClient.FetchHTML(ctx, url)
 	if err != nil {
@@ -140,7 +133,6 @@ func (f *Fetcher) FetchRSSWithBrowser(ctx context.Context, url string, maxItems 
 	return items, nil
 }
 
-// ExtractArticleFromRSSItem extracts article content from an RSS item's URL
 func (f *Fetcher) ExtractArticleFromRSSItem(ctx context.Context, item *gofeed.Item, useBrowser ...bool) (model.ScrapedArticle, error) {
 	result, err := f.ExtractArticle(ctx, item.Link, useBrowser...)
 	if err != nil {
@@ -206,7 +198,6 @@ func (f *Fetcher) getPublishedAt(item *gofeed.Item) time.Time {
 	return time.Now()
 }
 
-// HTML utility methods
 func (f *Fetcher) getFirstImageFromHTML(html []byte) *string {
 	var thumbnailURL string
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(html))

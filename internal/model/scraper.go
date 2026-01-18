@@ -37,6 +37,7 @@ type ArticleFilter struct {
 	EndDate     *time.Time `json:"end_date,omitempty"`
 	Limit       int        `json:"limit"`
 	Offset      int        `json:"offset"`
+	IncludeText bool       `json:"include_text,omitempty"`
 }
 
 // SearchFilter represents filters for searching articles

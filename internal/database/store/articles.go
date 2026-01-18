@@ -17,7 +17,6 @@ func NewArticlesStore(db *sql.DB) *ArticlesStore {
 	return &ArticlesStore{db: db}
 }
 
-// Create inserts a new article into the database from a scraped article
 func (s *ArticlesStore) Create(scrapedArticle model.ScrapedArticle) (int64, error) {
 	query := `
 		INSERT INTO articles (source_name, title, url, content_text, content_html, image_url, language, published_at, created_at, updated_at)
@@ -51,7 +50,6 @@ func (s *ArticlesStore) Create(scrapedArticle model.ScrapedArticle) (int64, erro
 	return id, nil
 }
 
-// Upsert inserts a new article or updates an existing one based on URL from a scraped article
 func (s *ArticlesStore) Upsert(scrapedArticle model.ScrapedArticle) (int64, error) {
 	query := `
 		INSERT INTO articles (source_name, title, url, content_text, content_html, image_url, language, published_at, created_at, updated_at)
@@ -86,22 +84,17 @@ func (s *ArticlesStore) Upsert(scrapedArticle model.ScrapedArticle) (int64, erro
 		return 0, fmt.Errorf("failed to upsert article: %w", err)
 	}
 
-	// For upsert, we need to get the ID differently
-	// If it was an insert, we can get LastInsertId
-	// If it was an update, we need to query by URL
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		return 0, fmt.Errorf("failed to get rows affected: %w", err)
 	}
 
 	if rowsAffected > 0 {
-		// Try to get the ID from LastInsertId first (for inserts)
 		id, err := result.LastInsertId()
 		if err == nil && id > 0 {
 			return id, nil
 		}
 
-		// If LastInsertId didn't work (for updates), query by URL
 		existingArticle, err := s.GetByURL(scrapedArticle.URL)
 		if err != nil {
 			return 0, fmt.Errorf("failed to get updated article: %w", err)
@@ -114,7 +107,6 @@ func (s *ArticlesStore) Upsert(scrapedArticle model.ScrapedArticle) (int64, erro
 	return 0, fmt.Errorf("no article was affected by upsert operation")
 }
 
-// BulkCreate inserts multiple articles in a single transaction from scraped articles
 func (s *ArticlesStore) BulkCreate(scrapedArticles []model.ScrapedArticle) ([]int64, error) {
 	if len(scrapedArticles) == 0 {
 		return []int64{}, nil
@@ -173,7 +165,6 @@ func (s *ArticlesStore) BulkCreate(scrapedArticles []model.ScrapedArticle) ([]in
 	return ids, nil
 }
 
-// BulkUpsert upserts multiple articles in a single transaction from scraped articles
 func (s *ArticlesStore) BulkUpsert(scrapedArticles []model.ScrapedArticle) ([]int64, error) {
 	if len(scrapedArticles) == 0 {
 		return []int64{}, nil
@@ -226,12 +217,10 @@ func (s *ArticlesStore) BulkUpsert(scrapedArticles []model.ScrapedArticle) ([]in
 			return nil, fmt.Errorf("failed to upsert article: %w", err)
 		}
 
-		// Try to get the ID from LastInsertId first (for inserts)
 		id, err := result.LastInsertId()
 		if err == nil && id > 0 {
 			ids = append(ids, id)
 		} else {
-			// If LastInsertId didn't work (for updates), query by URL
 			existingArticle, err := s.GetByURL(sa.URL)
 			if err != nil {
 				return nil, fmt.Errorf("failed to get updated article: %w", err)
@@ -249,7 +238,6 @@ func (s *ArticlesStore) BulkUpsert(scrapedArticles []model.ScrapedArticle) ([]in
 	return ids, nil
 }
 
-// GetByID retrieves an article by its ID
 func (s *ArticlesStore) GetByID(id int64) (*model.Article, error) {
 	query := `
 		SELECT id, source_name, title, url, content_text, content_html, image_url, language, published_at, created_at, updated_at
@@ -282,7 +270,46 @@ func (s *ArticlesStore) GetByID(id int64) (*model.Article, error) {
 	return article, nil
 }
 
-// GetByURL retrieves an article by its URL
+func (s *ArticlesStore) GetByIDWithFilter(id int64, filter model.ArticleFilter) (*model.Article, error) {
+	selectFields := "id, source_name, title, url"
+	if filter.IncludeText {
+		selectFields += ", content_text"
+	} else {
+		selectFields += ", '' as content_text"
+	}
+	selectFields += ", content_html, image_url, language, published_at, created_at, updated_at"
+
+	query := `
+		SELECT ` + selectFields + `
+		FROM articles
+		WHERE id = ?
+	`
+
+	article := &model.Article{}
+	err := s.db.QueryRow(query, id).Scan(
+		&article.ID,
+		&article.SourceName,
+		&article.Title,
+		&article.URL,
+		&article.ContentText,
+		&article.ContentHTML,
+		&article.ImageURL,
+		&article.Language,
+		&article.PublishedAt,
+		&article.CreatedAt,
+		&article.UpdatedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get article by id: %w", err)
+	}
+
+	return article, nil
+}
+
 func (s *ArticlesStore) GetByURL(url string) (*model.Article, error) {
 	query := `
 		SELECT id, source_name, title, url, content_text, content_html, image_url, language, published_at, created_at, updated_at
@@ -315,7 +342,6 @@ func (s *ArticlesStore) GetByURL(url string) (*model.Article, error) {
 	return article, nil
 }
 
-// List retrieves articles with optional filtering
 func (s *ArticlesStore) List(filter model.ArticleFilter) ([]*model.Article, error) {
 	query, args := s.buildListQuery(filter)
 
@@ -354,7 +380,6 @@ func (s *ArticlesStore) List(filter model.ArticleFilter) ([]*model.Article, erro
 	return articles, nil
 }
 
-// Count returns the total number of articles matching the filter
 func (s *ArticlesStore) Count(filter model.ArticleFilter) (int64, error) {
 	query, args := s.buildCountQuery(filter)
 
@@ -367,15 +392,12 @@ func (s *ArticlesStore) Count(filter model.ArticleFilter) (int64, error) {
 	return count, nil
 }
 
-// ListPaginated retrieves paginated articles with filtering
 func (s *ArticlesStore) ListPaginated(filter model.ArticleFilter) (*model.PaginatedResult[*model.Article], error) {
-	// Get total count
 	total, err := s.Count(filter)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get articles
 	articles, err := s.List(filter)
 	if err != nil {
 		return nil, err
@@ -389,7 +411,6 @@ func (s *ArticlesStore) ListPaginated(filter model.ArticleFilter) (*model.Pagina
 	return model.NewPaginatedResult(articles, total, page, filter.Limit), nil
 }
 
-// Update updates an existing article
 func (s *ArticlesStore) Update(article *model.Article) error {
 	query := `
 		UPDATE articles 
@@ -429,7 +450,6 @@ func (s *ArticlesStore) Update(article *model.Article) error {
 	return nil
 }
 
-// Delete removes an article by ID
 func (s *ArticlesStore) Delete(id int64) error {
 	query := `DELETE FROM articles WHERE id = ?`
 
@@ -450,7 +470,6 @@ func (s *ArticlesStore) Delete(id int64) error {
 	return nil
 }
 
-// ExistsByURL checks if an article with the given URL exists
 func (s *ArticlesStore) ExistsByURL(url string) (bool, error) {
 	query := `SELECT 1 FROM articles WHERE url = ? LIMIT 1`
 
@@ -466,7 +485,6 @@ func (s *ArticlesStore) ExistsByURL(url string) (bool, error) {
 	return true, nil
 }
 
-// buildListQuery builds the SQL query for listing articles
 func (s *ArticlesStore) buildListQuery(filter model.ArticleFilter) (string, []interface{}) {
 	var conditions []string
 	var args []interface{}
@@ -495,8 +513,16 @@ func (s *ArticlesStore) buildListQuery(filter model.ArticleFilter) (string, []in
 		args = append(args, *filter.EndDate)
 	}
 
+	selectFields := "id, source_name, title, url"
+	if filter.IncludeText {
+		selectFields += ", content_text"
+	} else {
+		selectFields += ", '' as content_text"
+	}
+	selectFields += ", content_html, image_url, language, published_at, created_at, updated_at"
+
 	query := `
-		SELECT id, source_name, title, url, content_text, content_html, image_url, language, published_at, created_at, updated_at
+		SELECT ` + selectFields + `
 		FROM articles
 	`
 
@@ -517,7 +543,6 @@ func (s *ArticlesStore) buildListQuery(filter model.ArticleFilter) (string, []in
 	return query, args
 }
 
-// buildCountQuery builds the SQL query for counting articles
 func (s *ArticlesStore) buildCountQuery(filter model.ArticleFilter) (string, []interface{}) {
 	var conditions []string
 	var args []interface{}

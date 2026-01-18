@@ -16,7 +16,6 @@ func NewSearchStore(db *sql.DB) *SearchStore {
 	return &SearchStore{db: db}
 }
 
-// Search performs a full-text search on articles with optional filtering
 func (s *SearchStore) Search(filter model.SearchFilter) ([]*model.SearchResult, error) {
 	query, args := s.buildSearchQuery(filter)
 
@@ -56,15 +55,12 @@ func (s *SearchStore) Search(filter model.SearchFilter) ([]*model.SearchResult, 
 	return results, nil
 }
 
-// SearchPaginated performs a paginated full-text search on articles
 func (s *SearchStore) SearchPaginated(filter model.SearchFilter) (*model.PaginatedResult[*model.SearchResult], error) {
-	// Get total count
 	total, err := s.CountSearchResults(filter)
 	if err != nil {
 		return nil, err
 	}
 
-	// Get search results
 	results, err := s.Search(filter)
 	if err != nil {
 		return nil, err
@@ -78,7 +74,6 @@ func (s *SearchStore) SearchPaginated(filter model.SearchFilter) (*model.Paginat
 	return model.NewPaginatedResult(results, total, page, filter.Limit), nil
 }
 
-// CountSearchResults returns the total number of search results matching the filter
 func (s *SearchStore) CountSearchResults(filter model.SearchFilter) (int64, error) {
 	query, args := s.buildSearchCountQuery(filter)
 
@@ -91,7 +86,6 @@ func (s *SearchStore) CountSearchResults(filter model.SearchFilter) (int64, erro
 	return count, nil
 }
 
-// GetAvailableSources returns all unique source names in the database
 func (s *SearchStore) GetAvailableSources() ([]string, error) {
 	query := `SELECT DISTINCT source_name FROM articles ORDER BY source_name`
 
@@ -118,7 +112,6 @@ func (s *SearchStore) GetAvailableSources() ([]string, error) {
 	return sources, nil
 }
 
-// GetAvailableLanguages returns all unique languages in the database
 func (s *SearchStore) GetAvailableLanguages() ([]string, error) {
 	query := `SELECT DISTINCT language FROM articles ORDER BY language`
 
@@ -145,7 +138,6 @@ func (s *SearchStore) GetAvailableLanguages() ([]string, error) {
 	return languages, nil
 }
 
-// GetSourcesByLanguage returns all sources that have articles in the specified language
 func (s *SearchStore) GetSourcesByLanguage(language string) ([]string, error) {
 	query := `SELECT DISTINCT source_name FROM articles WHERE language = ? ORDER BY source_name`
 
@@ -172,20 +164,16 @@ func (s *SearchStore) GetSourcesByLanguage(language string) ([]string, error) {
 	return sources, nil
 }
 
-// buildSearchQuery builds the SQL query for full-text search
 func (s *SearchStore) buildSearchQuery(filter model.SearchFilter) (string, []interface{}) {
 	var conditions []string
 	var args []interface{}
 
-	// FTS search condition
 	if filter.Query != "" {
-		// Escape special characters in the query for FTS
 		escapedQuery := s.escapeFTSQuery(filter.Query)
 		conditions = append(conditions, "articles_fts MATCH ?")
 		args = append(args, escapedQuery)
 	}
 
-	// Additional filters
 	if filter.Language != nil {
 		conditions = append(conditions, "a.language = ?")
 		args = append(args, *filter.Language)
@@ -210,10 +198,10 @@ func (s *SearchStore) buildSearchQuery(filter model.SearchFilter) (string, []int
 		args = append(args, *filter.EndDate)
 	}
 
+	selectFields := "a.id, a.source_name, a.title, a.url, a.image_url, a.language, a.published_at, a.created_at, a.updated_at, articles_fts.rank"
+
 	query := `
-		SELECT a.id, a.source_name, a.title, a.url, a.content_text, a.content_html, a.image_url, a.language, 
-		       a.published_at, a.created_at, a.updated_at,
-		       articles_fts.rank
+		SELECT ` + selectFields + `
 		FROM articles a
 		JOIN articles_fts ON a.id = articles_fts.rowid
 	`
@@ -222,7 +210,6 @@ func (s *SearchStore) buildSearchQuery(filter model.SearchFilter) (string, []int
 		query += " WHERE " + strings.Join(conditions, " AND ")
 	}
 
-	// Order by relevance score (rank) for FTS, then by ID
 	if filter.Query != "" {
 		query += " ORDER BY articles_fts.rank, a.id DESC"
 	} else {
@@ -240,19 +227,16 @@ func (s *SearchStore) buildSearchQuery(filter model.SearchFilter) (string, []int
 	return query, args
 }
 
-// buildSearchCountQuery builds the SQL query for counting search results
 func (s *SearchStore) buildSearchCountQuery(filter model.SearchFilter) (string, []interface{}) {
 	var conditions []string
 	var args []interface{}
 
-	// FTS search condition
 	if filter.Query != "" {
 		escapedQuery := s.escapeFTSQuery(filter.Query)
 		conditions = append(conditions, "articles_fts MATCH ?")
 		args = append(args, escapedQuery)
 	}
 
-	// Additional filters
 	if filter.Language != nil {
 		conditions = append(conditions, "a.language = ?")
 		args = append(args, *filter.Language)
@@ -290,7 +274,6 @@ func (s *SearchStore) buildSearchCountQuery(filter model.SearchFilter) (string, 
 	return query, args
 }
 
-// escapeFTSQuery escapes special characters in the query for FTS5
 func (s *SearchStore) escapeFTSQuery(query string) string {
 	// FTS5 special characters that need to be escaped: " ' * + - : ^ ~ ( ) [ ] { } ,
 	// We'll wrap the entire query in quotes to treat it as a phrase search
@@ -299,14 +282,12 @@ func (s *SearchStore) escapeFTSQuery(query string) string {
 	return `"` + escaped + `"`
 }
 
-// SearchWithHighlight performs a search and returns results with highlighted snippets
 func (s *SearchStore) SearchWithHighlight(filter model.SearchFilter) ([]*model.SearchResult, error) {
 	// For now, we'll use the regular search. In the future, we could implement
 	// snippet highlighting using FTS5's snippet() function
 	return s.Search(filter)
 }
 
-// GetRecentArticles returns the most recent articles with optional filtering
 func (s *SearchStore) GetRecentArticles(language *string, sourceNames []string, limit int) ([]*model.Article, error) {
 	var conditions []string
 	var args []interface{}
@@ -325,8 +306,10 @@ func (s *SearchStore) GetRecentArticles(language *string, sourceNames []string, 
 		conditions = append(conditions, fmt.Sprintf("source_name IN (%s)", strings.Join(placeholders, ",")))
 	}
 
+	selectFields := "id, source_name, title, url, image_url, language, published_at, created_at, updated_at"
+
 	query := `
-		SELECT id, source_name, title, url, content_text, content_html, image_url, language, published_at, created_at, updated_at
+		SELECT ` + selectFields + `
 		FROM articles
 	`
 

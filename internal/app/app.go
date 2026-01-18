@@ -16,7 +16,6 @@ import (
 	"ipmanlk/cnapi/internal/service"
 )
 
-// App holds all application dependencies and services
 type App struct {
 	Config     *config.Config
 	DB         *sql.DB
@@ -27,14 +26,12 @@ type App struct {
 	Logger     *slog.Logger
 }
 
-// Services holds all application services
 type Services struct {
 	Scrape  service.ScrapeService
 	Article service.ArticleService
 	Search  service.SearchService
 }
 
-// New creates and initializes a new application instance
 func New(ctx context.Context) (*App, error) {
 	cfg, err := config.Load()
 	if err != nil {
@@ -91,18 +88,15 @@ func New(ctx context.Context) (*App, error) {
 	return app, nil
 }
 
-// Close gracefully shuts down the application
 func (a *App) Close(ctx context.Context) error {
 	slog.Info("shutting down application")
 
-	// Stop HTTP server if running
 	if a.HTTPServer != nil {
 		if err := a.HTTPServer.Shutdown(ctx); err != nil {
 			slog.Error("error stopping HTTP server", "error", err)
 		}
 	}
 
-	// Stop scheduler if running
 	if a.Scheduler != nil && a.Scheduler.IsRunning() {
 		if err := a.Scheduler.Stop(); err != nil {
 			slog.Error("error stopping scheduler", "error", err)
@@ -119,7 +113,6 @@ func (a *App) Close(ctx context.Context) error {
 	return nil
 }
 
-// setupLogger creates and configures a structured logger
 func setupLogger(cfg config.LoggerConfig) *slog.Logger {
 	var level slog.Level
 	switch cfg.Level {
@@ -150,7 +143,6 @@ func setupLogger(cfg config.LoggerConfig) *slog.Logger {
 	return slog.New(handler)
 }
 
-// initDatabase initializes the database connection
 func initDatabase(cfg config.DatabaseConfig) (*sql.DB, error) {
 	db, err := sql.Open(cfg.Driver, cfg.DSN)
 	if err != nil {
@@ -175,7 +167,6 @@ func initDatabase(cfg config.DatabaseConfig) (*sql.DB, error) {
 	return db, nil
 }
 
-// initServices initializes all application services with their dependencies
 func initServices(cfg *config.Config, store *database.Store) *Services {
 	httpClient := fetcher.NewHTTPClient(cfg.Fetcher.HTTPTimeout)
 	browserClient := fetcher.NewBrowserAPIClient(

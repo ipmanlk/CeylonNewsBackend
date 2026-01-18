@@ -13,6 +13,17 @@ type SearchHandler struct {
 	searchService service.SearchService
 }
 
+type SearchResultResponse struct {
+	ID             int64   `json:"id"`
+	SourceName     string  `json:"source_name"`
+	Title          string  `json:"title"`
+	URL            string  `json:"url"`
+	ImageURL       *string `json:"image_url,omitempty"`
+	Language       string  `json:"language"`
+	PublishedAt    string  `json:"published_at"`
+	RelevanceScore float64 `json:"relevance_score"`
+}
+
 func NewSearchHandler(searchService service.SearchService) *SearchHandler {
 	return &SearchHandler{
 		searchService: searchService,
@@ -63,14 +74,43 @@ func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 		Offset:      offset,
 	}
 
-	result, err := h.searchService.SearchPaginated(r.Context(), filter)
+	paginatedResult, err := h.searchService.SearchPaginated(r.Context(), filter)
 	if err != nil {
 		slog.Error("failed to search articles", "query", query, "error", err)
 		httpx.RespondInternalError(w, "failed to search articles")
 		return
 	}
 
-	httpx.RespondJSON(w, http.StatusOK, result)
+	// Convert to lightweight response format
+	searchResponses := make([]SearchResultResponse, len(paginatedResult.Data))
+	for i, article := range paginatedResult.Data {
+		searchResponses[i] = SearchResultResponse{
+			ID:             article.ID,
+			SourceName:     article.SourceName,
+			Title:          article.Title,
+			URL:            article.URL,
+			ImageURL:       article.ImageURL,
+			Language:       article.Language,
+			PublishedAt:    article.PublishedAt.Format("2006-01-02T15:04:05Z07:00"),
+			RelevanceScore: article.RelevanceScore,
+		}
+	}
+
+	response := struct {
+		Data       []SearchResultResponse `json:"data"`
+		Total      int64                  `json:"total"`
+		Page       int                    `json:"page"`
+		PerPage    int                    `json:"per_page"`
+		TotalPages int                    `json:"total_pages"`
+	}{
+		Data:       searchResponses,
+		Total:      paginatedResult.Total,
+		Page:       paginatedResult.Page,
+		PerPage:    paginatedResult.PerPage,
+		TotalPages: paginatedResult.TotalPages,
+	}
+
+	httpx.RespondJSON(w, http.StatusOK, response)
 }
 
 func (h *SearchHandler) GetAvailableSources(w http.ResponseWriter, r *http.Request) {
@@ -121,7 +161,7 @@ func (h *SearchHandler) GetSourcesByLanguage(w http.ResponseWriter, r *http.Requ
 
 func (h *SearchHandler) GetRecentArticles(w http.ResponseWriter, r *http.Request) {
 	language := httpx.ParseQueryStringPtr(r, "language")
-	sourceNames := httpx.ParseQueryStrings(r, "source_names")
+	sourceNames := httpx.ParseQueryStrings(r, "sourceNames")
 
 	limit, err := httpx.ParseQueryInt(r, "limit", 20)
 	if err != nil {
@@ -136,8 +176,23 @@ func (h *SearchHandler) GetRecentArticles(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// Convert to lightweight response format
+	searchResponses := make([]SearchResultResponse, len(articles))
+	for i, article := range articles {
+		searchResponses[i] = SearchResultResponse{
+			ID:             article.ID,
+			SourceName:     article.SourceName,
+			Title:          article.Title,
+			URL:            article.URL,
+			ImageURL:       article.ImageURL,
+			Language:       article.Language,
+			PublishedAt:    article.PublishedAt.Format("2006-01-02T15:04:05Z07:00"),
+			RelevanceScore: 0, // No relevance score for recent articles
+		}
+	}
+
 	httpx.RespondJSON(w, http.StatusOK, map[string]interface{}{
-		"articles": articles,
-		"count":    len(articles),
+		"articles": searchResponses,
+		"count":    len(searchResponses),
 	})
 }

@@ -33,6 +33,7 @@ type ArticleService interface {
 	BulkCreate(ctx context.Context, articles []model.ScrapedArticle) ([]int64, error)
 	BulkUpsert(ctx context.Context, articles []model.ScrapedArticle) ([]int64, error)
 	GetByID(ctx context.Context, id int64) (*model.Article, error)
+	GetByIDWithFilter(ctx context.Context, id int64, filter model.ArticleFilter) (*model.Article, error)
 	GetByURL(ctx context.Context, url string) (*model.Article, error)
 	List(ctx context.Context, filter model.ArticleFilter) ([]*model.Article, error)
 	ListPaginated(ctx context.Context, filter model.ArticleFilter) (*model.PaginatedResult[*model.Article], error)

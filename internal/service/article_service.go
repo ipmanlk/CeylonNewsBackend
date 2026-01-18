@@ -11,7 +11,6 @@ type articleService struct {
 	store database.ArticlesStore
 }
 
-// NewArticleService creates a new article service
 func NewArticleService(store database.ArticlesStore) ArticleService {
 	return &articleService{
 		store: store,
@@ -32,6 +31,10 @@ func (s *articleService) BulkUpsert(ctx context.Context, articles []model.Scrape
 
 func (s *articleService) GetByID(ctx context.Context, id int64) (*model.Article, error) {
 	return s.store.GetByID(id)
+}
+
+func (s *articleService) GetByIDWithFilter(ctx context.Context, id int64, filter model.ArticleFilter) (*model.Article, error) {
+	return s.store.GetByIDWithFilter(id, filter)
 }
 
 func (s *articleService) GetByURL(ctx context.Context, url string) (*model.Article, error) {
