@@ -33,6 +33,6 @@ func (s *searchService) GetSourcesByLanguage(language string) ([]string, error) 
 	return s.store.GetSourcesByLanguage(language)
 }
 
-func (s *searchService) GetRecentArticles(language *string, sourceNames []string, limit int) ([]*model.Article, error) {
-	return s.store.GetRecentArticles(language, sourceNames, limit)
+func (s *searchService) GetRecentArticles(languages []string, sourceNames []string, limit int) ([]*model.Article, error) {
+	return s.store.GetRecentArticles(languages, sourceNames, limit)
 }

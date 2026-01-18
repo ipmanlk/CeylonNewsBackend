@@ -279,13 +279,17 @@ func (s *SearchStore) escapeFTSQuery(query string) string {
 	return `"` + escaped + `"`
 }
 
-func (s *SearchStore) GetRecentArticles(language *string, sourceNames []string, limit int) ([]*model.Article, error) {
+func (s *SearchStore) GetRecentArticles(languages []string, sourceNames []string, limit int) ([]*model.Article, error) {
 	var conditions []string
 	var args []interface{}
 
-	if language != nil {
-		conditions = append(conditions, "language = ?")
-		args = append(args, *language)
+	if len(languages) > 0 {
+		placeholders := make([]string, len(languages))
+		for i, lang := range languages {
+			placeholders[i] = "?"
+			args = append(args, lang)
+		}
+		conditions = append(conditions, fmt.Sprintf("language IN (%s)", strings.Join(placeholders, ",")))
 	}
 
 	if len(sourceNames) > 0 {
@@ -328,8 +332,6 @@ func (s *SearchStore) GetRecentArticles(language *string, sourceNames []string, 
 			&article.SourceName,
 			&article.Title,
 			&article.URL,
-			&article.ContentText,
-			&article.ContentHTML,
 			&article.ImageURL,
 			&article.Language,
 			&article.PublishedAt,

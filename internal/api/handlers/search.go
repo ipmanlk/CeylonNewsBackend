@@ -15,7 +15,7 @@ type SearchService interface {
 	GetAvailableSources() ([]string, error)
 	GetAvailableLanguages() ([]string, error)
 	GetSourcesByLanguage(language string) ([]string, error)
-	GetRecentArticles(language *string, sourceNames []string, limit int) ([]*model.Article, error)
+	GetRecentArticles(languages []string, sourceNames []string, limit int) ([]*model.Article, error)
 }
 
 type SearchHandler struct {
@@ -138,7 +138,7 @@ func (h *SearchHandler) GetSourcesByLanguage(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *SearchHandler) GetRecentArticles(w http.ResponseWriter, r *http.Request) {
-	language := httpx.ParseQueryStringPtr(r, "language")
+	languages := httpx.ParseQueryStringsFromCSV(r, "languages")
 	sourceNames := httpx.ParseQueryStrings(r, "source_names")
 
 	limit, err := httpx.ParseQueryInt(r, "limit", 20)
@@ -147,7 +147,7 @@ func (h *SearchHandler) GetRecentArticles(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	articles, err := h.searchService.GetRecentArticles(language, sourceNames, limit)
+	articles, err := h.searchService.GetRecentArticles(languages, sourceNames, limit)
 	if err != nil {
 		slog.Error("failed to get recent articles", "error", err)
 		httpx.RespondInternalError(w, "failed to retrieve recent articles")

@@ -30,7 +30,7 @@ type SearchStore interface {
 	GetAvailableSources() ([]string, error)
 	GetAvailableLanguages() ([]string, error)
 	GetSourcesByLanguage(language string) ([]string, error)
-	GetRecentArticles(language *string, sourceNames []string, limit int) ([]*model.Article, error)
+	GetRecentArticles(languages []string, sourceNames []string, limit int) ([]*model.Article, error)
 }
 
 // Store provides access to all database operations
