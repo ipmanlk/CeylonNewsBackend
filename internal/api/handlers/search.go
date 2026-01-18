@@ -38,87 +38,56 @@ func NewSearchHandler(searchService SearchService) *SearchHandler {
 	}
 }
 
+func toSearchResultResponse(result *model.SearchResult) SearchResultResponse {
+	return SearchResultResponse{
+		ID:             result.ID,
+		SourceName:     result.SourceName,
+		Title:          result.Title,
+		URL:            result.URL,
+		ImageURL:       result.ImageURL,
+		Language:       result.Language,
+		PublishedAt:    result.PublishedAt.Format("2006-01-02T15:04:05Z07:00"),
+		RelevanceScore: result.RelevanceScore,
+	}
+}
+
 func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
-	query := httpx.ParseQueryString(r, "q", "")
-	if query == "" {
+	pagination, err := httpx.ParsePaginationParams(r)
+	if err != nil {
+		httpx.RespondBadRequest(w, err.Error())
+		return
+	}
+
+	searchParams, err := httpx.ParseSearchFilterParams(r)
+	if err != nil {
+		httpx.RespondBadRequest(w, err.Error())
+		return
+	}
+
+	if searchParams.Query == "" {
 		httpx.RespondBadRequest(w, "query parameter 'q' is required")
 		return
 	}
 
-	limit, err := httpx.ParseQueryInt(r, "limit", 20)
-	if err != nil {
-		httpx.RespondBadRequest(w, err.Error())
-		return
-	}
-
-	offset, err := httpx.ParseQueryInt(r, "offset", 0)
-	if err != nil {
-		httpx.RespondBadRequest(w, err.Error())
-		return
-	}
-
-	language := httpx.ParseQueryStringPtr(r, "language")
-	sourceNames := httpx.ParseQueryStrings(r, "source_names")
-
-	startDate, err := httpx.ParseQueryTime(r, "start_date")
-	if err != nil {
-		httpx.RespondBadRequest(w, err.Error())
-		return
-	}
-
-	endDate, err := httpx.ParseQueryTime(r, "end_date")
-	if err != nil {
-		httpx.RespondBadRequest(w, err.Error())
-		return
-	}
-
 	filter := model.SearchFilter{
-		Query:       query,
-		Language:    language,
-		SourceNames: sourceNames,
-		StartDate:   startDate,
-		EndDate:     endDate,
-		Limit:       limit,
-		Offset:      offset,
+		Query:       searchParams.Query,
+		Language:    searchParams.Language,
+		SourceNames: searchParams.SourceNames,
+		StartDate:   searchParams.StartDate,
+		EndDate:     searchParams.EndDate,
+		Limit:       pagination.Limit,
+		Offset:      pagination.Offset,
 	}
 
 	paginatedResult, err := h.searchService.Search(r.Context(), filter)
 	if err != nil {
-		slog.Error("failed to search articles", "query", query, "error", err)
+		slog.Error("failed to search articles", "query", searchParams.Query, "error", err)
 		httpx.RespondInternalError(w, "failed to search articles")
 		return
 	}
 
-	// Convert to lightweight response format
-	searchResponses := make([]SearchResultResponse, len(paginatedResult.Data))
-	for i, article := range paginatedResult.Data {
-		searchResponses[i] = SearchResultResponse{
-			ID:             article.ID,
-			SourceName:     article.SourceName,
-			Title:          article.Title,
-			URL:            article.URL,
-			ImageURL:       article.ImageURL,
-			Language:       article.Language,
-			PublishedAt:    article.PublishedAt.Format("2006-01-02T15:04:05Z07:00"),
-			RelevanceScore: article.RelevanceScore,
-		}
-	}
-
-	response := struct {
-		Data       []SearchResultResponse `json:"data"`
-		Total      int64                  `json:"total"`
-		Page       int                    `json:"page"`
-		PerPage    int                    `json:"per_page"`
-		TotalPages int                    `json:"total_pages"`
-	}{
-		Data:       searchResponses,
-		Total:      paginatedResult.Total,
-		Page:       paginatedResult.Page,
-		PerPage:    paginatedResult.PerPage,
-		TotalPages: paginatedResult.TotalPages,
-	}
-
-	httpx.RespondJSON(w, http.StatusOK, response)
+	response := httpx.TransformPaginated(paginatedResult, toSearchResultResponse)
+	httpx.RespondPaginated(w, response)
 }
 
 func (h *SearchHandler) GetAvailableSources(w http.ResponseWriter, r *http.Request) {
@@ -184,7 +153,6 @@ func (h *SearchHandler) GetRecentArticles(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Convert to lightweight response format
 	searchResponses := make([]SearchResultResponse, len(articles))
 	for i, article := range articles {
 		searchResponses[i] = SearchResultResponse{
@@ -195,7 +163,7 @@ func (h *SearchHandler) GetRecentArticles(w http.ResponseWriter, r *http.Request
 			ImageURL:       article.ImageURL,
 			Language:       article.Language,
 			PublishedAt:    article.PublishedAt.Format("2006-01-02T15:04:05Z07:00"),
-			RelevanceScore: 0, // No relevance score for recent articles
+			RelevanceScore: 0,
 		}
 	}
 

@@ -46,41 +46,38 @@ func NewArticleHandler(articleService ArticleService) *ArticleHandler {
 	}
 }
 
+func toArticleListResponse(article *model.Article) ArticleListResponse {
+	return ArticleListResponse{
+		ID:          article.ID,
+		SourceName:  article.SourceName,
+		Title:       article.Title,
+		URL:         article.URL,
+		ImageURL:    article.ImageURL,
+		Language:    article.Language,
+		PublishedAt: article.PublishedAt.Format("2006-01-02T15:04:05Z07:00"),
+	}
+}
+
 func (h *ArticleHandler) List(w http.ResponseWriter, r *http.Request) {
-	limit, err := httpx.ParseQueryInt(r, "limit", 20)
+	pagination, err := httpx.ParsePaginationParams(r)
 	if err != nil {
 		httpx.RespondBadRequest(w, err.Error())
 		return
 	}
 
-	offset, err := httpx.ParseQueryInt(r, "offset", 0)
-	if err != nil {
-		httpx.RespondBadRequest(w, err.Error())
-		return
-	}
-
-	language := httpx.ParseQueryStringPtr(r, "language")
-	sourceNames := httpx.ParseQueryStrings(r, "source_names")
-
-	startDate, err := httpx.ParseQueryTime(r, "start_date")
-	if err != nil {
-		httpx.RespondBadRequest(w, err.Error())
-		return
-	}
-
-	endDate, err := httpx.ParseQueryTime(r, "end_date")
+	filterParams, err := httpx.ParseArticleFilterParams(r)
 	if err != nil {
 		httpx.RespondBadRequest(w, err.Error())
 		return
 	}
 
 	filter := model.ArticleFilter{
-		Language:    language,
-		SourceNames: sourceNames,
-		StartDate:   startDate,
-		EndDate:     endDate,
-		Limit:       limit,
-		Offset:      offset,
+		Language:    filterParams.Language,
+		SourceNames: filterParams.SourceNames,
+		StartDate:   filterParams.StartDate,
+		EndDate:     filterParams.EndDate,
+		Limit:       pagination.Limit,
+		Offset:      pagination.Offset,
 	}
 
 	result, err := h.articleService.ListPaginated(r.Context(), filter)
@@ -90,34 +87,8 @@ func (h *ArticleHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	listResponses := make([]ArticleListResponse, len(result.Data))
-	for i, article := range result.Data {
-		listResponses[i] = ArticleListResponse{
-			ID:          article.ID,
-			SourceName:  article.SourceName,
-			Title:       article.Title,
-			URL:         article.URL,
-			ImageURL:    article.ImageURL,
-			Language:    article.Language,
-			PublishedAt: article.PublishedAt.Format("2006-01-02T15:04:05Z07:00"),
-		}
-	}
-
-	response := struct {
-		Data       []ArticleListResponse `json:"data"`
-		Total      int64                 `json:"total"`
-		Page       int                   `json:"page"`
-		PerPage    int                   `json:"per_page"`
-		TotalPages int                   `json:"total_pages"`
-	}{
-		Data:       listResponses,
-		Total:      result.Total,
-		Page:       result.Page,
-		PerPage:    result.PerPage,
-		TotalPages: result.TotalPages,
-	}
-
-	httpx.RespondJSON(w, http.StatusOK, response)
+	response := httpx.TransformPaginated(result, toArticleListResponse)
+	httpx.RespondPaginated(w, response)
 }
 
 func (h *ArticleHandler) GetByID(w http.ResponseWriter, r *http.Request) {
