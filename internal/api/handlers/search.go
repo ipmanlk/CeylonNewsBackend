@@ -66,7 +66,7 @@ func (h *SearchHandler) Search(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if searchParams.Query == "" {
-		httpx.RespondBadRequest(w, "query parameter 'q' is required")
+		httpx.RespondBadRequest(w, "query parameter 'query' is required")
 		return
 	}
 
@@ -139,7 +139,7 @@ func (h *SearchHandler) GetSourcesByLanguage(w http.ResponseWriter, r *http.Requ
 
 func (h *SearchHandler) GetRecentArticles(w http.ResponseWriter, r *http.Request) {
 	language := httpx.ParseQueryStringPtr(r, "language")
-	sourceNames := httpx.ParseQueryStrings(r, "sourceNames")
+	sourceNames := httpx.ParseQueryStrings(r, "source_names")
 
 	limit, err := httpx.ParseQueryInt(r, "limit", 20)
 	if err != nil {

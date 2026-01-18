@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	ErrQueryRequired = errors.New("query parameter 'q' is required")
+	ErrQueryRequired = errors.New("query parameter 'query' is required")
 	ErrQueryTooShort = errors.New("query must be at least 2 characters")
 )
 
@@ -49,7 +49,7 @@ func (f *SearchFilterRequest) Validate() error {
 
 // ParseSearchFilterRequest parses and validates search filter parameters from HTTP request
 func ParseSearchFilterRequest(r *http.Request) (*SearchFilterRequest, error) {
-	query := httpx.ParseQueryString(r, "q", "")
+	query := httpx.ParseQueryString(r, "query", "")
 
 	startDate, err := httpx.ParseQueryTime(r, "start_date")
 	if err != nil {
