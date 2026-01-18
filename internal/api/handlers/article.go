@@ -14,6 +14,16 @@ type ArticleService interface {
 	ListPaginated(ctx context.Context, filter model.ArticleFilter) (*model.PaginatedResult[*model.Article], error)
 }
 
+type ArticleListResponse struct {
+	ID          int64   `json:"id"`
+	SourceName  string  `json:"source_name"`
+	Title       string  `json:"title"`
+	URL         string  `json:"url"`
+	ImageURL    *string `json:"image_url,omitempty"`
+	Language    string  `json:"language"`
+	PublishedAt string  `json:"published_at"`
+}
+
 type ArticleResponse struct {
 	ID          int64   `json:"id"`
 	SourceName  string  `json:"source_name"`
@@ -64,8 +74,6 @@ func (h *ArticleHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	includeText := r.URL.Query().Get("include_text") == "true"
-
 	filter := model.ArticleFilter{
 		Language:    language,
 		SourceNames: sourceNames,
@@ -73,7 +81,6 @@ func (h *ArticleHandler) List(w http.ResponseWriter, r *http.Request) {
 		EndDate:     endDate,
 		Limit:       limit,
 		Offset:      offset,
-		IncludeText: includeText,
 	}
 
 	result, err := h.articleService.ListPaginated(r.Context(), filter)
@@ -83,7 +90,34 @@ func (h *ArticleHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.RespondJSON(w, http.StatusOK, result)
+	listResponses := make([]ArticleListResponse, len(result.Data))
+	for i, article := range result.Data {
+		listResponses[i] = ArticleListResponse{
+			ID:          article.ID,
+			SourceName:  article.SourceName,
+			Title:       article.Title,
+			URL:         article.URL,
+			ImageURL:    article.ImageURL,
+			Language:    article.Language,
+			PublishedAt: article.PublishedAt.Format("2006-01-02T15:04:05Z07:00"),
+		}
+	}
+
+	response := struct {
+		Data       []ArticleListResponse `json:"data"`
+		Total      int64                 `json:"total"`
+		Page       int                   `json:"page"`
+		PerPage    int                   `json:"per_page"`
+		TotalPages int                   `json:"total_pages"`
+	}{
+		Data:       listResponses,
+		Total:      result.Total,
+		Page:       result.Page,
+		PerPage:    result.PerPage,
+		TotalPages: result.TotalPages,
+	}
+
+	httpx.RespondJSON(w, http.StatusOK, response)
 }
 
 func (h *ArticleHandler) GetByID(w http.ResponseWriter, r *http.Request) {

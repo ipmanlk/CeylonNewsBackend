@@ -359,8 +359,6 @@ func (s *ArticlesStore) List(filter model.ArticleFilter) ([]*model.Article, erro
 			&article.SourceName,
 			&article.Title,
 			&article.URL,
-			&article.ContentText,
-			&article.ContentHTML,
 			&article.ImageURL,
 			&article.Language,
 			&article.PublishedAt,
@@ -513,13 +511,7 @@ func (s *ArticlesStore) buildListQuery(filter model.ArticleFilter) (string, []in
 		args = append(args, *filter.EndDate)
 	}
 
-	selectFields := "id, source_name, title, url"
-	if filter.IncludeText {
-		selectFields += ", content_text"
-	} else {
-		selectFields += ", '' as content_text"
-	}
-	selectFields += ", content_html, image_url, language, published_at, created_at, updated_at"
+	selectFields := "id, source_name, title, url, image_url, language, published_at, created_at, updated_at"
 
 	query := `
 		SELECT ` + selectFields + `
