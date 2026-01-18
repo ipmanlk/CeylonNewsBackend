@@ -16,7 +16,7 @@ func setupTestDB(t *testing.T) *sql.DB {
 	t.Helper()
 
 	// Create in-memory database with FTS5 support
-	db, err := sql.Open("sqlite", "file::memory:?mode=memory&_fk=true")
+	db, err := sql.Open("sqlite3", ":memory:")
 	if err != nil {
 		t.Fatalf("failed to open test database: %v", err)
 	}
@@ -38,7 +38,7 @@ func setupTestDB(t *testing.T) *sql.DB {
 
 // TestSQLiteDriverIsAvailable is a dummy test to ensure the sqlite driver is linked
 func TestSQLiteDriverIsAvailable(t *testing.T) {
-	db, err := sql.Open("sqlite", ":memory:")
+	db, err := sql.Open("sqlite3", ":memory:")
 	if err != nil {
 		t.Fatalf("failed to open sqlite connection: %v", err)
 	}

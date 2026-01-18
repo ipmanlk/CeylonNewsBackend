@@ -3,7 +3,7 @@ GO_CMD = go
 GO_BUILD = $(GO_CMD) build
 OUTPUT_DIR = build
 
-.PHONY: dev-run dev build clean test test-sources test-source test-store help
+.PHONY: dev-run dev build clean test test-api test-sources test-source test-store help
 
 help:
 	@echo "Ceylon News Backend - Available Commands"
@@ -16,6 +16,7 @@ help:
 	@echo ""
 	@echo "Testing:"
 	@echo "  make test            - Run all tests"
+	@echo "  make test-api        - Run API and database tests only"
 	@echo "  make test-sources    - Run all scraper source tests"
 	@echo "  make test-source s=X - Run specific source test (e.g., s=bbc)"
 	@echo "  make test-store      - Run database store tests"
@@ -44,6 +45,10 @@ clean:
 test:
 	@echo "Running all tests..."
 	$(GO_CMD) test -v --tags "fts5" ./...
+
+test-api:
+	@echo "Running API and database tests..."
+	$(GO_CMD) test -v --tags "fts5" -timeout 30s ./internal/database/store ./internal/api/...
 
 migrate-up:
 	@echo "Running database migrations up..."
