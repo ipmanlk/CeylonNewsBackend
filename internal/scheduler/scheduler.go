@@ -7,12 +7,21 @@ import (
 	"sync"
 	"time"
 
+	"ipmanlk/cnapi/internal/model"
 	"ipmanlk/cnapi/internal/service"
 )
 
+type ScrapeService interface {
+	ScrapeAllConcurrent(ctx context.Context, workerCount int, batchSize int) <-chan service.ScrapeResult
+}
+
+type ArticleService interface {
+	BulkUpsert(ctx context.Context, articles []model.ScrapedArticle) ([]int64, error)
+}
+
 type Scheduler struct {
-	scrapeService  service.ScrapeService
-	articleService service.ArticleService
+	scrapeService  ScrapeService
+	articleService ArticleService
 	interval       time.Duration
 	ticker         *time.Ticker
 	stopCh         chan struct{}
@@ -22,7 +31,7 @@ type Scheduler struct {
 	nextRun        time.Time
 }
 
-func New(scrapeService service.ScrapeService, articleService service.ArticleService, interval time.Duration) *Scheduler {
+func New(scrapeService ScrapeService, articleService ArticleService, interval time.Duration) *Scheduler {
 	return &Scheduler{
 		scrapeService:  scrapeService,
 		articleService: articleService,

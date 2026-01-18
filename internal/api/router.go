@@ -9,7 +9,6 @@ import (
 
 	"ipmanlk/cnapi/internal/api/handlers"
 	"ipmanlk/cnapi/internal/api/middleware"
-	"ipmanlk/cnapi/internal/service"
 )
 
 type Server struct {
@@ -26,7 +25,7 @@ type Config struct {
 	ShutdownTimeout time.Duration
 }
 
-func NewServer(articleService service.ArticleService, searchService service.SearchService, config Config) *Server {
+func NewServer(articleService handlers.ArticleService, searchService handlers.SearchService, config Config) *Server {
 	mux := http.NewServeMux()
 
 	articleHandler := handlers.NewArticleHandler(articleService)

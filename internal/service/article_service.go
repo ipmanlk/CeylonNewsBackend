@@ -11,7 +11,7 @@ type articleService struct {
 	store database.ArticlesStore
 }
 
-func NewArticleService(store database.ArticlesStore) ArticleService {
+func NewArticleService(store database.ArticlesStore) *articleService {
 	return &articleService{
 		store: store,
 	}

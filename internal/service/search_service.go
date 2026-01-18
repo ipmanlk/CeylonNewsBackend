@@ -11,8 +11,7 @@ type searchService struct {
 	store database.SearchStore
 }
 
-// NewSearchService creates a new search service
-func NewSearchService(store database.SearchStore) SearchService {
+func NewSearchService(store database.SearchStore) *searchService {
 	return &searchService{
 		store: store,
 	}

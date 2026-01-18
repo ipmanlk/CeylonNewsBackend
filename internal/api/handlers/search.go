@@ -1,16 +1,24 @@
 package handlers
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 
 	"ipmanlk/cnapi/internal/model"
-	"ipmanlk/cnapi/internal/service"
 	"ipmanlk/cnapi/pkg/httpx"
 )
 
+type SearchService interface {
+	Search(ctx context.Context, filter model.SearchFilter) (*model.PaginatedResult[*model.SearchResult], error)
+	GetAvailableSources() ([]string, error)
+	GetAvailableLanguages() ([]string, error)
+	GetSourcesByLanguage(language string) ([]string, error)
+	GetRecentArticles(language *string, sourceNames []string, limit int) ([]*model.Article, error)
+}
+
 type SearchHandler struct {
-	searchService service.SearchService
+	searchService SearchService
 }
 
 type SearchResultResponse struct {
@@ -24,7 +32,7 @@ type SearchResultResponse struct {
 	RelevanceScore float64 `json:"relevance_score"`
 }
 
-func NewSearchHandler(searchService service.SearchService) *SearchHandler {
+func NewSearchHandler(searchService SearchService) *SearchHandler {
 	return &SearchHandler{
 		searchService: searchService,
 	}

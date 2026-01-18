@@ -1,12 +1,18 @@
 package handlers
 
 import (
-	"ipmanlk/cnapi/internal/model"
-	"ipmanlk/cnapi/internal/service"
-	"ipmanlk/cnapi/pkg/httpx"
+	"context"
 	"log/slog"
 	"net/http"
+
+	"ipmanlk/cnapi/internal/model"
+	"ipmanlk/cnapi/pkg/httpx"
 )
+
+type ArticleService interface {
+	GetByIDWithFilter(ctx context.Context, id int64, filter model.ArticleFilter) (*model.Article, error)
+	ListPaginated(ctx context.Context, filter model.ArticleFilter) (*model.PaginatedResult[*model.Article], error)
+}
 
 type ArticleResponse struct {
 	ID          int64   `json:"id"`
@@ -21,10 +27,10 @@ type ArticleResponse struct {
 }
 
 type ArticleHandler struct {
-	articleService service.ArticleService
+	articleService ArticleService
 }
 
-func NewArticleHandler(articleService service.ArticleService) *ArticleHandler {
+func NewArticleHandler(articleService ArticleService) *ArticleHandler {
 	return &ArticleHandler{
 		articleService: articleService,
 	}

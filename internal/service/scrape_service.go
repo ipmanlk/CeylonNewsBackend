@@ -3,17 +3,27 @@ package service
 import (
 	"context"
 	"fmt"
-	"ipmanlk/cnapi/internal/model"
-	"ipmanlk/cnapi/internal/scraper"
 	"log/slog"
 	"sync"
+
+	"ipmanlk/cnapi/internal/model"
+	"ipmanlk/cnapi/internal/scraper"
 )
+
+type ScrapeResult struct {
+	Articles     []model.ScrapedArticle
+	Source       string
+	Language     model.Language
+	ArticleCount int
+	Success      bool
+	Error        error
+}
 
 type scrapeService struct {
 	registry *scraper.Registry
 }
 
-func NewScrapeService(registry *scraper.Registry) ScrapeService {
+func NewScrapeService(registry *scraper.Registry) *scrapeService {
 	return &scrapeService{
 		registry: registry,
 	}

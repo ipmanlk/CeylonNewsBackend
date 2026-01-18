@@ -20,16 +20,9 @@ type App struct {
 	Config     *config.Config
 	DB         *sql.DB
 	Store      *database.Store
-	Services   *Services
 	Scheduler  *scheduler.Scheduler
 	HTTPServer *api.Server
 	Logger     *slog.Logger
-}
-
-type Services struct {
-	Scrape  service.ScrapeService
-	Article service.ArticleService
-	Search  service.SearchService
 }
 
 func New(ctx context.Context) (*App, error) {
@@ -55,11 +48,23 @@ func New(ctx context.Context) (*App, error) {
 
 	store := database.NewStore(db)
 
-	services := initServices(cfg, store)
+	httpClient := fetcher.NewHTTPClient(cfg.Fetcher.HTTPTimeout)
+	browserClient := fetcher.NewBrowserAPIClient(
+		cfg.Fetcher.BrowserAPIURL,
+		cfg.Fetcher.BrowserTimeout,
+		cfg.Fetcher.BrowserWaitTime,
+	)
+	fetch := fetcher.NewFetcher(httpClient, browserClient)
+
+	scraperRegistry := scraper.NewRegistry(fetch)
+
+	scrapeService := service.NewScrapeService(scraperRegistry)
+	articleService := service.NewArticleService(store.Articles)
+	searchService := service.NewSearchService(store.Search)
 
 	sched := scheduler.New(
-		services.Scrape,
-		services.Article,
+		scrapeService,
+		articleService,
 		cfg.Scheduler.ScrapeInterval,
 	)
 
@@ -71,13 +76,12 @@ func New(ctx context.Context) (*App, error) {
 		IdleTimeout:     cfg.HTTP.IdleTimeout,
 		ShutdownTimeout: cfg.HTTP.ShutdownTimeout,
 	}
-	httpServer := api.NewServer(services.Article, services.Search, httpConfig)
+	httpServer := api.NewServer(articleService, searchService, httpConfig)
 
 	app := &App{
 		Config:     cfg,
 		DB:         db,
 		Store:      store,
-		Services:   services,
 		Scheduler:  sched,
 		HTTPServer: httpServer,
 		Logger:     logger,
@@ -165,22 +169,4 @@ func initDatabase(cfg config.DatabaseConfig) (*sql.DB, error) {
 	)
 
 	return db, nil
-}
-
-func initServices(cfg *config.Config, store *database.Store) *Services {
-	httpClient := fetcher.NewHTTPClient(cfg.Fetcher.HTTPTimeout)
-	browserClient := fetcher.NewBrowserAPIClient(
-		cfg.Fetcher.BrowserAPIURL,
-		cfg.Fetcher.BrowserTimeout,
-		cfg.Fetcher.BrowserWaitTime,
-	)
-	fetch := fetcher.NewFetcher(httpClient, browserClient)
-
-	scraperRegistry := scraper.NewRegistry(fetch)
-
-	return &Services{
-		Scrape:  service.NewScrapeService(scraperRegistry),
-		Article: service.NewArticleService(store.Articles),
-		Search:  service.NewSearchService(store.Search),
-	}
 }
