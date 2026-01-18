@@ -50,8 +50,7 @@ func (s *IslandScraper) scrapeEn(ctx context.Context) ([]model.ScrapedArticle, e
 		}
 		seenLinks[item.Link] = true
 
-		// Extract article content using the RSS item
-		article, err := s.fetcher.ExtractArticleFromRSSItem(ctx, item, true)
+		article, err := s.fetcher.ExtractArticleFromRSSItemWithSelector(ctx, item, ".mvp-post-soc-out.right.relative", true)
 		if err != nil {
 			slog.Warn("failed to extract article", "url", item.Link, "error", err)
 			continue

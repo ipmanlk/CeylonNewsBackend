@@ -221,6 +221,73 @@ func (f *Fetcher) ExtractLinks(doc *goquery.Document, selector, urlPattern strin
 	return links
 }
 
+// ExtractArticleWithSelector extracts article content from a specific HTML element using a CSS selector
+// before passing it to go-trafilatura. This is useful when you want to focus extraction on a specific
+// part of the page (e.g., the article body) rather than the entire page.
+//
+// Example usage:
+//
+//	result, err := fetcher.ExtractArticleWithSelector(ctx, url, "article.main-content")
+//	result, err := fetcher.ExtractArticleWithSelector(ctx, url, "div.post-body", true)
+func (f *Fetcher) ExtractArticleWithSelector(ctx context.Context, url string, contentSelector string, useBrowser ...bool) (*trafilatura.ExtractResult, error) {
+	doc, err := f.FetchHTMLDoc(ctx, url, useBrowser...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch HTML doc from %s: %w", url, err)
+	}
+
+	contentNode, err := f.extractNodeWithSelector(doc, contentSelector)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract content node from %s: %w", url, err)
+	}
+
+	opts := trafilatura.Options{
+		IncludeLinks:    true,
+		IncludeImages:   true,
+		ExcludeComments: true,
+		EnableFallback:  true,
+		Deduplicate:     true,
+	}
+
+	result, err := trafilatura.ExtractDocument(contentNode.Get(0), opts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract content from %s: %w", url, err)
+	}
+
+	return result, nil
+}
+
+func (f *Fetcher) ExtractArticleFromRSSItemWithSelector(ctx context.Context, item *gofeed.Item, contentSelector string, useBrowser ...bool) (model.ScrapedArticle, error) {
+	result, err := f.ExtractArticleWithSelector(ctx, item.Link, contentSelector, useBrowser...)
+	if err != nil {
+		return model.ScrapedArticle{}, fmt.Errorf("failed to extract article: %w", err)
+	}
+
+	imageURL := f.getImageURL(item)
+
+	doc := trafilatura.CreateReadableDocument(result)
+	htmlContent := dom.OuterHTML(doc)
+
+	article := model.ScrapedArticle{
+		Title:       item.Title,
+		URL:         item.Link,
+		ContentText: result.ContentText,
+		ContentHTML: htmlContent,
+		ImageURL:    imageURL,
+		Categories:  item.Categories,
+		PublishedAt: f.getPublishedAt(item),
+	}
+
+	return article, nil
+}
+
+func (f *Fetcher) extractNodeWithSelector(doc *goquery.Document, selector string) (*goquery.Selection, error) {
+	selection := doc.Find(selector)
+	if selection.Length() == 0 {
+		return nil, fmt.Errorf("no elements found with selector: %s", selector)
+	}
+	return selection, nil
+}
+
 func (f *Fetcher) CreateScrapedArticle(sourceName string, result *trafilatura.ExtractResult, url string, imageURL *string, publishedAt time.Time) model.ScrapedArticle {
 	doc := trafilatura.CreateReadableDocument(result)
 	htmlContent := dom.OuterHTML(doc)
