@@ -36,6 +36,21 @@ func setupTestDB(t *testing.T) *sql.DB {
 	return db
 }
 
+// TestSQLiteDriverIsAvailable is a dummy test to ensure the sqlite driver is linked
+func TestSQLiteDriverIsAvailable(t *testing.T) {
+	db, err := sql.Open("sqlite", ":memory:")
+	if err != nil {
+		t.Fatalf("failed to open sqlite connection: %v", err)
+	}
+	defer db.Close()
+
+	// Simple test query to verify driver works
+	_, err = db.Exec("SELECT 1")
+	if err != nil {
+		t.Fatalf("failed to execute test query: %v", err)
+	}
+}
+
 // runTestMigrations applies the database schema for testing
 func runTestMigrations(db *sql.DB) error {
 	// Execute the migration statements directly
@@ -45,7 +60,8 @@ func runTestMigrations(db *sql.DB) error {
 			source_name TEXT NOT NULL,
 			title TEXT NOT NULL,
 			url TEXT NOT NULL UNIQUE,
-			content TEXT NOT NULL,
+			content_text TEXT NOT NULL,
+			content_html TEXT,
 			image_url TEXT,
 			language TEXT NOT NULL CHECK (language IN ('en', 'si', 'ta')),
 			published_at DATETIME NOT NULL,
@@ -58,19 +74,19 @@ func runTestMigrations(db *sql.DB) error {
 		`CREATE INDEX idx_articles_url ON articles(url)`,
 		`CREATE VIRTUAL TABLE articles_fts USING fts5(
 			title,
-			content,
+			content_text,
 			content='articles',
 			content_rowid='id'
 		)`,
 		`CREATE TRIGGER articles_fts_insert AFTER INSERT ON articles BEGIN
-			INSERT INTO articles_fts(rowid, title, content) VALUES (new.id, new.title, new.content);
+			INSERT INTO articles_fts(rowid, title, content_text) VALUES (new.id, new.title, new.content_text);
 		END`,
 		`CREATE TRIGGER articles_fts_delete AFTER DELETE ON articles BEGIN
-			INSERT INTO articles_fts(articles_fts, rowid, title, content) VALUES('delete', old.id, old.title, old.content);
+			INSERT INTO articles_fts(articles_fts, rowid, title, content_text) VALUES('delete', old.id, old.title, old.content_text);
 		END`,
 		`CREATE TRIGGER articles_fts_update AFTER UPDATE ON articles BEGIN
-			INSERT INTO articles_fts(articles_fts, rowid, title, content) VALUES('delete', old.id, old.title, old.content);
-			INSERT INTO articles_fts(rowid, title, content) VALUES (new.id, new.title, new.content);
+			INSERT INTO articles_fts(articles_fts, rowid, title, content_text) VALUES('delete', old.id, old.title, old.content_text);
+			INSERT INTO articles_fts(rowid, title, content_text) VALUES (new.id, new.title, new.content_text);
 		END`,
 	}
 
@@ -92,7 +108,8 @@ func newTestArticle(overrides ...func(*model.ScrapedArticle)) model.ScrapedArtic
 		SourceName:  "TestSource",
 		Title:       "Test Article Title",
 		URL:         fmt.Sprintf("https://example.com/article-%d", now.UnixNano()),
-		Content:     "This is test article content with some text to make it realistic.",
+		ContentText: "This is test article content with some text to make it realistic.",
+		ContentHTML: "<p>This is test article content with some text to make it realistic.</p>",
 		ImageURL:    &imageURL,
 		Language:    model.LangEn,
 		PublishedAt: now,
@@ -135,8 +152,11 @@ func assertArticleEqual(t *testing.T, stored *model.Article, scraped model.Scrap
 	if stored.URL != scraped.URL {
 		t.Errorf("URL mismatch: got %s, want %s", stored.URL, scraped.URL)
 	}
-	if stored.Content != scraped.Content {
-		t.Errorf("Content mismatch: got %s, want %s", stored.Content, scraped.Content)
+	if stored.ContentText != scraped.ContentText {
+		t.Errorf("ContentText mismatch: got %s, want %s", stored.ContentText, scraped.ContentText)
+	}
+	if stored.ContentHTML != scraped.ContentHTML {
+		t.Errorf("ContentHTML mismatch: got %s, want %s", stored.ContentHTML, scraped.ContentHTML)
 	}
 	if stored.Language != string(scraped.Language) {
 		t.Errorf("Language mismatch: got %s, want %s", stored.Language, scraped.Language)

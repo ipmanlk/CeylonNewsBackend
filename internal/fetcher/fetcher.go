@@ -11,6 +11,7 @@ import (
 	"ipmanlk/cnapi/internal/model"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/go-shiori/dom"
 	"github.com/markusmobius/go-trafilatura"
 	"github.com/mmcdole/gofeed"
 )
@@ -148,10 +149,14 @@ func (f *Fetcher) ExtractArticleFromRSSItem(ctx context.Context, item *gofeed.It
 
 	imageURL := f.getImageURL(item)
 
+	doc := trafilatura.CreateReadableDocument(result)
+	htmlContent := dom.OuterHTML(doc)
+
 	article := model.ScrapedArticle{
 		Title:       item.Title,
 		URL:         item.Link,
-		Content:     result.ContentText,
+		ContentText: result.ContentText,
+		ContentHTML: htmlContent,
 		ImageURL:    imageURL,
 		Categories:  item.Categories,
 		PublishedAt: f.getPublishedAt(item),
@@ -223,4 +228,19 @@ func (f *Fetcher) ExtractLinks(doc *goquery.Document, selector, urlPattern strin
 		}
 	})
 	return links
+}
+
+func (f *Fetcher) CreateScrapedArticle(sourceName string, result *trafilatura.ExtractResult, url string, imageURL *string, publishedAt time.Time) model.ScrapedArticle {
+	doc := trafilatura.CreateReadableDocument(result)
+	htmlContent := dom.OuterHTML(doc)
+
+	return model.ScrapedArticle{
+		SourceName:  sourceName,
+		Title:       result.Metadata.Title,
+		URL:         url,
+		ContentText: result.ContentText,
+		ContentHTML: htmlContent,
+		ImageURL:    imageURL,
+		PublishedAt: publishedAt,
+	}
 }

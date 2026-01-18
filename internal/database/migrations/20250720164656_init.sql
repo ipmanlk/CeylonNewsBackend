@@ -5,7 +5,8 @@ CREATE TABLE articles (
     source_name TEXT NOT NULL,
     title TEXT NOT NULL,
     url TEXT NOT NULL UNIQUE,
-    content TEXT NOT NULL,
+    content_text TEXT NOT NULL,
+    content_html TEXT,
     image_url TEXT,
     language TEXT NOT NULL CHECK (language IN ('en', 'si', 'ta')),
     published_at DATETIME NOT NULL,
@@ -25,7 +26,7 @@ CREATE INDEX idx_articles_url ON articles(url);
 -- Create FTS (Full Text Search) virtual table for article search
 CREATE VIRTUAL TABLE articles_fts USING fts5(
     title,
-    content,
+    content_text,
     content='articles',
     content_rowid='id'
 );
@@ -34,20 +35,20 @@ CREATE VIRTUAL TABLE articles_fts USING fts5(
 -- +goose StatementBegin
 -- Create triggers to maintain FTS index
 CREATE TRIGGER articles_fts_insert AFTER INSERT ON articles BEGIN
-    INSERT INTO articles_fts(rowid, title, content) VALUES (new.id, new.title, new.content);
+    INSERT INTO articles_fts(rowid, title, content_text) VALUES (new.id, new.title, new.content_text);
 END;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
 CREATE TRIGGER articles_fts_delete AFTER DELETE ON articles BEGIN
-    INSERT INTO articles_fts(articles_fts, rowid, title, content) VALUES('delete', old.id, old.title, old.content);
+    INSERT INTO articles_fts(articles_fts, rowid, title, content_text) VALUES('delete', old.id, old.title, old.content_text);
 END;
 -- +goose StatementEnd
 
 -- +goose StatementBegin
 CREATE TRIGGER articles_fts_update AFTER UPDATE ON articles BEGIN
-    INSERT INTO articles_fts(articles_fts, rowid, title, content) VALUES('delete', old.id, old.title, old.content);
-    INSERT INTO articles_fts(rowid, title, content) VALUES (new.id, new.title, new.content);
+    INSERT INTO articles_fts(articles_fts, rowid, title, content_text) VALUES('delete', old.id, old.title, old.content_text);
+    INSERT INTO articles_fts(rowid, title, content_text) VALUES (new.id, new.title, new.content_text);
 END;
 -- +goose StatementEnd
 

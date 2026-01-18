@@ -8,6 +8,17 @@ import (
 	"net/http"
 )
 
+type ArticleResponse struct {
+	ID          int64   `json:"id"`
+	SourceName  string  `json:"source_name"`
+	Title       string  `json:"title"`
+	URL         string  `json:"url"`
+	Content     string  `json:"content"`
+	ImageURL    *string `json:"image_url,omitempty"`
+	Language    string  `json:"language"`
+	PublishedAt string  `json:"published_at"`
+}
+
 type ArticleHandler struct {
 	articleService service.ArticleService
 }
@@ -84,5 +95,29 @@ func (h *ArticleHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpx.RespondJSON(w, http.StatusOK, article)
+	format := r.URL.Query().Get("format")
+	if format == "text" {
+		httpx.RespondJSON(w, http.StatusOK, ArticleResponse{
+			ID:          article.ID,
+			SourceName:  article.SourceName,
+			Title:       article.Title,
+			URL:         article.URL,
+			Content:     article.ContentText,
+			ImageURL:    article.ImageURL,
+			Language:    article.Language,
+			PublishedAt: article.PublishedAt.Format("2006-01-02T15:04:05Z07:00"),
+		})
+		return
+	}
+
+	httpx.RespondJSON(w, http.StatusOK, ArticleResponse{
+		ID:          article.ID,
+		SourceName:  article.SourceName,
+		Title:       article.Title,
+		URL:         article.URL,
+		Content:     article.ContentHTML,
+		ImageURL:    article.ImageURL,
+		Language:    article.Language,
+		PublishedAt: article.PublishedAt.Format("2006-01-02T15:04:05Z07:00"),
+	})
 }

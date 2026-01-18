@@ -331,7 +331,8 @@ func TestArticlesStore_Upsert(t *testing.T) {
 		updated := newTestArticle()
 		updated.URL = original.URL // Same URL
 		updated.Title = "Updated Title"
-		updated.Content = "Updated content with new information"
+		updated.ContentText = "Updated content with new information"
+		updated.ContentHTML = "<p>Updated content with new information</p>"
 		newImageURL := "https://example.com/new-image.jpg"
 		updated.ImageURL = &newImageURL
 
@@ -354,8 +355,11 @@ func TestArticlesStore_Upsert(t *testing.T) {
 		if stored.Title != updated.Title {
 			t.Errorf("Title not updated: got %s, want %s", stored.Title, updated.Title)
 		}
-		if stored.Content != updated.Content {
-			t.Errorf("Content not updated: got %s, want %s", stored.Content, updated.Content)
+		if stored.ContentText != updated.ContentText {
+			t.Errorf("ContentText not updated: got %s, want %s", stored.ContentText, updated.ContentText)
+		}
+		if stored.ContentHTML != updated.ContentHTML {
+			t.Errorf("ContentHTML not updated: got %s, want %s", stored.ContentHTML, updated.ContentHTML)
 		}
 		if stored.ImageURL == nil || *stored.ImageURL != *updated.ImageURL {
 			t.Errorf("ImageURL not updated")
@@ -674,7 +678,8 @@ func TestArticlesStore_BulkUpsert(t *testing.T) {
 			updated[i] = newTestArticle()
 			updated[i].URL = original[i].URL // Keep same URL
 			updated[i].Title = "Updated Title " + string(rune('A'+i))
-			updated[i].Content = "Updated content " + string(rune('A'+i))
+			updated[i].ContentText = "Updated content " + string(rune('A'+i))
+			updated[i].ContentHTML = "<p>Updated content " + string(rune('A'+i)) + "</p>"
 		}
 
 		updatedIDs, err := store.BulkUpsert(updated)
@@ -710,8 +715,11 @@ func TestArticlesStore_BulkUpsert(t *testing.T) {
 			if stored.Title != updatedArticle.Title {
 				t.Errorf("Article %d title not updated: got %s, want %s", i, stored.Title, updatedArticle.Title)
 			}
-			if stored.Content != updatedArticle.Content {
-				t.Errorf("Article %d content not updated: got %s, want %s", i, stored.Content, updatedArticle.Content)
+			if stored.ContentText != updatedArticle.ContentText {
+				t.Errorf("Article %d content text not updated: got %s, want %s", i, stored.ContentText, updatedArticle.ContentText)
+			}
+			if stored.ContentHTML != updatedArticle.ContentHTML {
+				t.Errorf("Article %d content html not updated: got %s, want %s", i, stored.ContentHTML, updatedArticle.ContentHTML)
 			}
 		}
 	})

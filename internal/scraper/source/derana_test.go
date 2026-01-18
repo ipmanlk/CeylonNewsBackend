@@ -53,7 +53,7 @@ func TestDeranaScraper(t *testing.T) {
 		if article.URL == "" {
 			t.Error("Article URL is empty")
 		}
-		if article.Content == "" {
+		if article.ContentText == "" {
 			t.Error("Article content is empty")
 		}
 		if article.PublishedAt.IsZero() {
@@ -93,7 +93,7 @@ func TestDeranaScraper(t *testing.T) {
 		if article.URL == "" {
 			t.Error("Article URL is empty")
 		}
-		if article.Content == "" {
+		if article.ContentText == "" {
 			t.Error("Article content is empty")
 		}
 		if article.PublishedAt.IsZero() {
@@ -133,7 +133,7 @@ func TestDeranaScraper(t *testing.T) {
 		if article.URL == "" {
 			t.Error("Article URL is empty")
 		}
-		if article.Content == "" {
+		if article.ContentText == "" {
 			t.Error("Article content is empty")
 		}
 		if article.PublishedAt.IsZero() {

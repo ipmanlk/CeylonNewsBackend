@@ -20,8 +20,8 @@ func NewArticlesStore(db *sql.DB) *ArticlesStore {
 // Create inserts a new article into the database from a scraped article
 func (s *ArticlesStore) Create(scrapedArticle model.ScrapedArticle) (int64, error) {
 	query := `
-		INSERT INTO articles (source_name, title, url, content, image_url, language, published_at, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO articles (source_name, title, url, content_text, content_html, image_url, language, published_at, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	now := time.Now()
@@ -30,7 +30,8 @@ func (s *ArticlesStore) Create(scrapedArticle model.ScrapedArticle) (int64, erro
 		scrapedArticle.SourceName,
 		scrapedArticle.Title,
 		scrapedArticle.URL,
-		scrapedArticle.Content,
+		scrapedArticle.ContentText,
+		scrapedArticle.ContentHTML,
 		scrapedArticle.ImageURL,
 		string(scrapedArticle.Language),
 		scrapedArticle.PublishedAt,
@@ -53,12 +54,13 @@ func (s *ArticlesStore) Create(scrapedArticle model.ScrapedArticle) (int64, erro
 // Upsert inserts a new article or updates an existing one based on URL from a scraped article
 func (s *ArticlesStore) Upsert(scrapedArticle model.ScrapedArticle) (int64, error) {
 	query := `
-		INSERT INTO articles (source_name, title, url, content, image_url, language, published_at, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO articles (source_name, title, url, content_text, content_html, image_url, language, published_at, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(url) DO UPDATE SET
 			source_name = excluded.source_name,
 			title = excluded.title,
-			content = excluded.content,
+			content_text = excluded.content_text,
+			content_html = excluded.content_html,
 			image_url = excluded.image_url,
 			language = excluded.language,
 			published_at = excluded.published_at,
@@ -71,7 +73,8 @@ func (s *ArticlesStore) Upsert(scrapedArticle model.ScrapedArticle) (int64, erro
 		scrapedArticle.SourceName,
 		scrapedArticle.Title,
 		scrapedArticle.URL,
-		scrapedArticle.Content,
+		scrapedArticle.ContentText,
+		scrapedArticle.ContentHTML,
 		scrapedArticle.ImageURL,
 		string(scrapedArticle.Language),
 		scrapedArticle.PublishedAt,
@@ -124,8 +127,8 @@ func (s *ArticlesStore) BulkCreate(scrapedArticles []model.ScrapedArticle) ([]in
 	defer tx.Rollback()
 
 	query := `
-		INSERT INTO articles (source_name, title, url, content, image_url, language, published_at, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO articles (source_name, title, url, content_text, content_html, image_url, language, published_at, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	stmt, err := tx.Prepare(query)
@@ -142,7 +145,8 @@ func (s *ArticlesStore) BulkCreate(scrapedArticles []model.ScrapedArticle) ([]in
 			sa.SourceName,
 			sa.Title,
 			sa.URL,
-			sa.Content,
+			sa.ContentText,
+			sa.ContentHTML,
 			sa.ImageURL,
 			string(sa.Language),
 			sa.PublishedAt,
@@ -182,12 +186,13 @@ func (s *ArticlesStore) BulkUpsert(scrapedArticles []model.ScrapedArticle) ([]in
 	defer tx.Rollback()
 
 	query := `
-		INSERT INTO articles (source_name, title, url, content, image_url, language, published_at, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO articles (source_name, title, url, content_text, content_html, image_url, language, published_at, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(url) DO UPDATE SET
 			source_name = excluded.source_name,
 			title = excluded.title,
-			content = excluded.content,
+			content_text = excluded.content_text,
+			content_html = excluded.content_html,
 			image_url = excluded.image_url,
 			language = excluded.language,
 			published_at = excluded.published_at,
@@ -208,7 +213,8 @@ func (s *ArticlesStore) BulkUpsert(scrapedArticles []model.ScrapedArticle) ([]in
 			sa.SourceName,
 			sa.Title,
 			sa.URL,
-			sa.Content,
+			sa.ContentText,
+			sa.ContentHTML,
 			sa.ImageURL,
 			string(sa.Language),
 			sa.PublishedAt,
@@ -246,7 +252,7 @@ func (s *ArticlesStore) BulkUpsert(scrapedArticles []model.ScrapedArticle) ([]in
 // GetByID retrieves an article by its ID
 func (s *ArticlesStore) GetByID(id int64) (*model.Article, error) {
 	query := `
-		SELECT id, source_name, title, url, content, image_url, language, published_at, created_at, updated_at
+		SELECT id, source_name, title, url, content_text, content_html, image_url, language, published_at, created_at, updated_at
 		FROM articles
 		WHERE id = ?
 	`
@@ -257,7 +263,8 @@ func (s *ArticlesStore) GetByID(id int64) (*model.Article, error) {
 		&article.SourceName,
 		&article.Title,
 		&article.URL,
-		&article.Content,
+		&article.ContentText,
+		&article.ContentHTML,
 		&article.ImageURL,
 		&article.Language,
 		&article.PublishedAt,
@@ -278,7 +285,7 @@ func (s *ArticlesStore) GetByID(id int64) (*model.Article, error) {
 // GetByURL retrieves an article by its URL
 func (s *ArticlesStore) GetByURL(url string) (*model.Article, error) {
 	query := `
-		SELECT id, source_name, title, url, content, image_url, language, published_at, created_at, updated_at
+		SELECT id, source_name, title, url, content_text, content_html, image_url, language, published_at, created_at, updated_at
 		FROM articles
 		WHERE url = ?
 	`
@@ -289,7 +296,8 @@ func (s *ArticlesStore) GetByURL(url string) (*model.Article, error) {
 		&article.SourceName,
 		&article.Title,
 		&article.URL,
-		&article.Content,
+		&article.ContentText,
+		&article.ContentHTML,
 		&article.ImageURL,
 		&article.Language,
 		&article.PublishedAt,
@@ -325,7 +333,8 @@ func (s *ArticlesStore) List(filter model.ArticleFilter) ([]*model.Article, erro
 			&article.SourceName,
 			&article.Title,
 			&article.URL,
-			&article.Content,
+			&article.ContentText,
+			&article.ContentHTML,
 			&article.ImageURL,
 			&article.Language,
 			&article.PublishedAt,
@@ -384,7 +393,7 @@ func (s *ArticlesStore) ListPaginated(filter model.ArticleFilter) (*model.Pagina
 func (s *ArticlesStore) Update(article *model.Article) error {
 	query := `
 		UPDATE articles 
-		SET source_name = ?, title = ?, url = ?, content = ?, image_url = ?, language = ?, 
+		SET source_name = ?, title = ?, url = ?, content_text = ?, content_html = ?, image_url = ?, language = ?, 
 		    published_at = ?, updated_at = ?
 		WHERE id = ?
 	`
@@ -395,7 +404,8 @@ func (s *ArticlesStore) Update(article *model.Article) error {
 		article.SourceName,
 		article.Title,
 		article.URL,
-		article.Content,
+		article.ContentText,
+		article.ContentHTML,
 		article.ImageURL,
 		article.Language,
 		article.PublishedAt,
@@ -486,7 +496,7 @@ func (s *ArticlesStore) buildListQuery(filter model.ArticleFilter) (string, []in
 	}
 
 	query := `
-		SELECT id, source_name, title, url, content, image_url, language, published_at, created_at, updated_at
+		SELECT id, source_name, title, url, content_text, content_html, image_url, language, published_at, created_at, updated_at
 		FROM articles
 	`
 

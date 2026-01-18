@@ -53,12 +53,17 @@ func (s *LankadeepaScraper) scrapeSi(ctx context.Context) ([]model.ScrapedArticl
 		// Extract article content using the RSS item
 		article, err := s.fetcher.ExtractArticleFromRSSItem(ctx, item)
 		if err != nil {
-			slog.Warn("failed to extract article", "scraper", "Lankadeepa", "url", item.Link, "error", err)
+			slog.Warn("failed to extract article", "url", item.Link, "error", err)
 			continue
 		}
 
-		if article.Title == "" || article.Content == "" {
-			slog.Debug("skipping article with missing content", "scraper", "Lankadeepa", "url", item.Link)
+		if article.Title == "" || article.ContentText == "" {
+			slog.Debug("skipping article with missing content", "url", item.Link)
+			continue
+		}
+
+		if article.ContentText == "" || article.ContentHTML == "" {
+			slog.Debug("skipping article with missing extracted content", "url", item.Link)
 			continue
 		}
 

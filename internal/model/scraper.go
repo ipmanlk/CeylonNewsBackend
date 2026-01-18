@@ -6,7 +6,8 @@ type ScrapedArticle struct {
 	SourceName  string
 	Title       string
 	URL         string
-	Content     string
+	ContentText string
+	ContentHTML string
 	ImageURL    *string
 	Categories  []string
 	Language    Language
@@ -19,7 +20,8 @@ type Article struct {
 	SourceName  string    `json:"source_name" db:"source_name"`
 	Title       string    `json:"title" db:"title"`
 	URL         string    `json:"url" db:"url"`
-	Content     string    `json:"content" db:"content"`
+	ContentText string    `json:"content_text" db:"content_text"`
+	ContentHTML string    `json:"content_html,omitempty" db:"content_html"`
 	ImageURL    *string   `json:"image_url,omitempty" db:"image_url"`
 	Language    string    `json:"language" db:"language"`
 	PublishedAt time.Time `json:"published_at" db:"published_at"`

@@ -55,8 +55,8 @@ func TestDivainaScraper(t *testing.T) {
 		if article.URL == "" {
 			t.Error("Article URL is empty")
 		}
-		if article.Content == "" {
-			t.Error("Article content is empty")
+		if article.ContentText == "" {
+			t.Error("Article content text is empty")
 		}
 		if article.PublishedAt.IsZero() {
 			t.Error("Article published date is zero")

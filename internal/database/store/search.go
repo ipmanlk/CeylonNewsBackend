@@ -34,7 +34,8 @@ func (s *SearchStore) Search(filter model.SearchFilter) ([]*model.SearchResult, 
 			&result.SourceName,
 			&result.Title,
 			&result.URL,
-			&result.Content,
+			&result.ContentText,
+			&result.ContentHTML,
 			&result.ImageURL,
 			&result.Language,
 			&result.PublishedAt,
@@ -210,7 +211,7 @@ func (s *SearchStore) buildSearchQuery(filter model.SearchFilter) (string, []int
 	}
 
 	query := `
-		SELECT a.id, a.source_name, a.title, a.url, a.content, a.image_url, a.language, 
+		SELECT a.id, a.source_name, a.title, a.url, a.content_text, a.content_html, a.image_url, a.language, 
 		       a.published_at, a.created_at, a.updated_at,
 		       articles_fts.rank
 		FROM articles a
@@ -325,7 +326,7 @@ func (s *SearchStore) GetRecentArticles(language *string, sourceNames []string, 
 	}
 
 	query := `
-		SELECT id, source_name, title, url, content, image_url, language, published_at, created_at, updated_at
+		SELECT id, source_name, title, url, content_text, content_html, image_url, language, published_at, created_at, updated_at
 		FROM articles
 	`
 
@@ -353,7 +354,8 @@ func (s *SearchStore) GetRecentArticles(language *string, sourceNames []string, 
 			&article.SourceName,
 			&article.Title,
 			&article.URL,
-			&article.Content,
+			&article.ContentText,
+			&article.ContentHTML,
 			&article.ImageURL,
 			&article.Language,
 			&article.PublishedAt,

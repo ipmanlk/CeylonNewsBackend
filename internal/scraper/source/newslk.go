@@ -123,24 +123,21 @@ func (s *NewsLKScraper) scrapeArticles(ctx context.Context, links []string, lang
 
 		result, err := s.fetcher.ExtractArticle(ctx, link, true)
 		if err != nil {
-			slog.Warn("failed to extract article", "scraper", "News.lk", "url", link, "error", err)
+			slog.Warn("failed to extract article", "url", link, "error", err)
 			continue
 		}
 
 		if result == nil || result.Metadata.Title == "" || result.ContentText == "" {
-			slog.Debug("skipping article with missing content", "scraper", "News.lk", "url", link)
+			slog.Debug("skipping article with missing content", "url", link)
 			continue
 		}
 
-		article := model.ScrapedArticle{
-			SourceName:  s.Name(),
-			Title:       result.Metadata.Title,
-			Content:     result.ContentText,
-			URL:         link,
-			ImageURL:    &result.Metadata.Image,
-			Language:    language,
-			PublishedAt: result.Metadata.Date,
+		article := s.fetcher.CreateScrapedArticle(s.Name(), result, link, &result.Metadata.Image, result.Metadata.Date)
+		if article.ContentText == "" || article.ContentHTML == "" {
+			slog.Debug("skipping article with missing extracted content", "url", link)
+			continue
 		}
+		article.Language = language
 
 		articles = append(articles, article)
 	}
