@@ -2,25 +2,31 @@ name = "BBC"
 
 [[languages]]
 language = "en"
-strategy = "html"
-page_url = "https://www.bbc.com/news/topics/cywd23g0gxgt"
-link_selectors = ["a"]
+max_items = 5
+
+[languages.listing]
+type = "html"
+url = "https://www.bbc.com/news/topics/cywd23g0gxgt"
+selectors = ["a"]
 url_prefix = "/news/articles/"
 base_url = "https://www.bbc.com"
-max_items = 5
 
 [[languages]]
 language = "si"
-strategy = "html"
-page_url = "https://www.bbc.com/sinhala/topics/cg7267dz901t"
-link_selectors = ["a"]
-url_prefix = "https://www.bbc.com/sinhala/articles/"
 max_items = 5
+
+[languages.listing]
+type = "html"
+url = "https://www.bbc.com/sinhala/topics/cg7267dz901t"
+selectors = ["a"]
+url_prefix = "https://www.bbc.com/sinhala/articles/"
 
 [[languages]]
 language = "ta"
-strategy = "html"
-page_url = "https://www.bbc.com/tamil/topics/cz74k7p3qw7t"
-link_selectors = ["a"]
-url_prefix = "https://www.bbc.com/tamil/articles/"
 max_items = 5
+
+[languages.listing]
+type = "html"
+url = "https://www.bbc.com/tamil/topics/cz74k7p3qw7t"
+selectors = ["a"]
+url_prefix = "https://www.bbc.com/tamil/articles/"

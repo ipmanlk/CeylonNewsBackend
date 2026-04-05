@@ -11,6 +11,11 @@ replace = [
 
 [[languages]]
 language = "en"
-strategy = "rss_article_browser"
-feed_url = "https://www.dailymirror.lk/rss/todays_headlines/419"
 max_items = 5
+
+[languages.listing]
+type = "rss"
+url = "https://www.dailymirror.lk/rss/todays_headlines/419"
+
+[languages.article]
+browser = true

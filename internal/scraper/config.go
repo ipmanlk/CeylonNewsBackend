@@ -1,26 +1,25 @@
 package scraper
 
-type ListingStrategy string
+type ListingConfig struct {
+	Type    string `toml:"type"`
+	URL     string `toml:"url"`
+	Browser bool   `toml:"browser"`
 
-const (
-	StrategyRSS                ListingStrategy = "rss"
-	StrategyRSSBrowser         ListingStrategy = "rss_browser"
-	StrategyRSSContentSelector ListingStrategy = "rss_content_selector"
-	StrategyRSSArticleBrowser  ListingStrategy = "rss_article_browser"
-	StrategyHTML               ListingStrategy = "html"
-	StrategyHTMLBrowser        ListingStrategy = "html_browser"
-)
+	Selectors []string `toml:"selectors"`
+	URLPrefix string   `toml:"url_prefix"`
+	BaseURL   string   `toml:"base_url"`
+}
+
+type ArticleConfig struct {
+	Browser  bool   `toml:"browser"`
+	Selector string `toml:"selector"`
+}
 
 type LangConfig struct {
-	Language        string          `toml:"language"`
-	Strategy        ListingStrategy `toml:"strategy"`
-	FeedURL         string          `toml:"feed_url"`
-	PageURL         string          `toml:"page_url"`
-	LinkSelectors   []string        `toml:"link_selectors"`
-	URLPrefix       string          `toml:"url_prefix"`
-	BaseURL         string          `toml:"base_url"`
-	MaxItems        int             `toml:"max_items"`
-	ContentSelector string          `toml:"content_selector"`
+	Language string        `toml:"language"`
+	MaxItems int           `toml:"max_items"`
+	Listing  ListingConfig `toml:"listing"`
+	Article  ArticleConfig `toml:"article"`
 }
 
 type SkipRule struct {

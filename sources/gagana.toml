@@ -2,9 +2,11 @@ name = "Gagana"
 
 [[languages]]
 language = "si"
-strategy = "html"
-page_url = "https://gagana.lk/news/srilanka"
-link_selectors = ["div.a-item h4 a"]
+max_items = 5
+
+[languages.listing]
+type = "html"
+url = "https://gagana.lk/news/srilanka"
+selectors = ["div.a-item h4 a"]
 url_prefix = "https://gagana.lk/article/"
 base_url = "https://gagana.lk"
-max_items = 5

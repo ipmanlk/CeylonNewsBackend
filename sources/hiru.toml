@@ -2,24 +2,30 @@ name = "Hiru News"
 
 [[languages]]
 language = "si"
-strategy = "html"
-page_url = "https://www.hirunews.lk"
-link_selectors = ["a.card-featured", "a.card-v1"]
-url_prefix = "https://hirunews.lk/"
 max_items = 5
+
+[languages.listing]
+type = "html"
+url = "https://www.hirunews.lk"
+selectors = ["a.card-featured", "a.card-v1"]
+url_prefix = "https://hirunews.lk/"
 
 [[languages]]
 language = "en"
-strategy = "html"
-page_url = "https://www.hirunews.lk/en/"
-link_selectors = ["a.card-featured", "a.card-v1"]
-url_prefix = "https://hirunews.lk/"
 max_items = 5
+
+[languages.listing]
+type = "html"
+url = "https://www.hirunews.lk/en/"
+selectors = ["a.card-featured", "a.card-v1"]
+url_prefix = "https://hirunews.lk/"
 
 [[languages]]
 language = "ta"
-strategy = "html"
-page_url = "https://www.hirunews.lk/tm/"
-link_selectors = ["a.card-featured", "a.card-v1"]
-url_prefix = "https://hirunews.lk/"
 max_items = 5
+
+[languages.listing]
+type = "html"
+url = "https://www.hirunews.lk/tm/"
+selectors = ["a.card-featured", "a.card-v1"]
+url_prefix = "https://hirunews.lk/"

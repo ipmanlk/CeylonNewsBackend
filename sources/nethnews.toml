@@ -2,6 +2,8 @@ name = "Neth News"
 
 [[languages]]
 language = "si"
-strategy = "rss"
-feed_url = "https://www.nethnews.lk/feed/"
 max_items = 5
+
+[languages.listing]
+type = "rss"
+url = "https://www.nethnews.lk/feed/"
