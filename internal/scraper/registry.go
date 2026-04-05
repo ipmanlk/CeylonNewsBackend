@@ -2,9 +2,10 @@ package scraper
 
 import (
 	"context"
+	"fmt"
+
 	"ipmanlk/cnapi/internal/fetcher"
 	"ipmanlk/cnapi/internal/model"
-	"ipmanlk/cnapi/internal/scraper/source"
 )
 
 type SourceScraper interface {
@@ -17,25 +18,18 @@ type Registry struct {
 	scrapers []SourceScraper
 }
 
-func NewRegistry(fetcher *fetcher.Fetcher) *Registry {
-	scrapers := []SourceScraper{
-		source.NewBBCScraper(fetcher),
-		source.NewDeranaScraper(fetcher),
-		source.NewDailyMirrorScraper(fetcher),
-		source.NewDivainaScraper(fetcher),
-		source.NewGaganaScraper(fetcher),
-		source.NewHiruScraper(fetcher),
-		source.NewIslandScraper(fetcher),
-		source.NewLankadeepaScraper(fetcher),
-		source.NewLankapuvathScraper(fetcher),
-		source.NewMawrataScraper(fetcher),
-		source.NewNewsLKScraper(fetcher),
-		source.NewNethnewsScraper(fetcher),
+func NewRegistry(f *fetcher.Fetcher, sourcesPath string) (*Registry, error) {
+	configs, err := LoadSourceConfigs(sourcesPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load source configs: %w", err)
 	}
 
-	return &Registry{
-		scrapers: scrapers,
+	scrapers := make([]SourceScraper, 0, len(configs))
+	for _, cfg := range configs {
+		scrapers = append(scrapers, NewGenericScraper(cfg, f))
 	}
+
+	return &Registry{scrapers: scrapers}, nil
 }
 
 func (r *Registry) GetScrapers() []SourceScraper {

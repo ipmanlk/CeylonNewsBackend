@@ -1,0 +1,8 @@
+name = "The Island"
+
+[[languages]]
+language = "en"
+strategy = "rss_content_selector"
+feed_url = "https://island.lk/feed/"
+content_selector = ".mvp-post-soc-out.right.relative"
+max_items = 5

@@ -1,0 +1,13 @@
+name = "Mawrata"
+
+[[languages]]
+language = "en"
+strategy = "rss"
+feed_url = "https://mawratanews.lk/feed/"
+max_items = 5
+
+[[languages]]
+language = "si"
+strategy = "rss"
+feed_url = "https://sinhala.mawratanews.lk/feed/"
+max_items = 5

@@ -8,11 +8,12 @@ import (
 )
 
 type Config struct {
-	Database  DatabaseConfig
-	Fetcher   FetcherConfig
-	Logger    LoggerConfig
-	Scheduler SchedulerConfig
-	HTTP      HTTPConfig
+	Database    DatabaseConfig
+	Fetcher     FetcherConfig
+	Logger      LoggerConfig
+	Scheduler   SchedulerConfig
+	HTTP        HTTPConfig
+	SourcesPath string
 }
 
 type SchedulerConfig struct {
@@ -82,6 +83,7 @@ func Load() (*Config, error) {
 			IdleTimeout:     getEnvDuration("HTTP_IDLE_TIMEOUT", 120*time.Second),
 			ShutdownTimeout: getEnvDuration("HTTP_SHUTDOWN_TIMEOUT", 15*time.Second),
 		},
+		SourcesPath: getEnv("SOURCES_PATH", "./sources"),
 	}
 
 	if err := cfg.Validate(); err != nil {

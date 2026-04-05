@@ -1,0 +1,28 @@
+name = "News.lk"
+
+[[languages]]
+language = "en"
+strategy = "html_browser"
+page_url = "https://news.lk/news/"
+link_selectors = ["article.item h2 a"]
+url_prefix = "/news/"
+base_url = "https://news.lk"
+max_items = 2
+
+[[languages]]
+language = "si"
+strategy = "html_browser"
+page_url = "https://sinhala.news.lk/news/"
+link_selectors = ["article.item h2 a"]
+url_prefix = "/news/"
+base_url = "https://sinhala.news.lk"
+max_items = 2
+
+[[languages]]
+language = "ta"
+strategy = "html_browser"
+page_url = "https://tamil.news.lk/news/"
+link_selectors = ["article.item h2 a"]
+url_prefix = "/news/"
+base_url = "https://tamil.news.lk"
+max_items = 2

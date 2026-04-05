@@ -56,7 +56,10 @@ func New(ctx context.Context) (*App, error) {
 	)
 	fetch := fetcher.NewFetcher(httpClient, browserClient)
 
-	scraperRegistry := scraper.NewRegistry(fetch)
+	scraperRegistry, err := scraper.NewRegistry(fetch, cfg.SourcesPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize scraper registry: %w", err)
+	}
 
 	scrapeService := service.NewScrapeService(scraperRegistry)
 	articleService := service.NewArticleService(store.Articles)
