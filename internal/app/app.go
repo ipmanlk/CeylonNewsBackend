@@ -69,6 +69,8 @@ func New(ctx context.Context) (*App, error) {
 		scrapeService,
 		articleService,
 		cfg.Scheduler.ScrapeInterval,
+		cfg.Scheduler.HTTPWorkers,
+		cfg.Scheduler.BrowserWorkers,
 	)
 
 	httpConfig := api.Config{

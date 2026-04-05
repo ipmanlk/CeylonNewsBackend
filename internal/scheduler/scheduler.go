@@ -12,7 +12,7 @@ import (
 )
 
 type ScrapeService interface {
-	ScrapeAllConcurrent(ctx context.Context, workerCount int, batchSize int) <-chan service.ScrapeResult
+	ScrapeAllConcurrent(ctx context.Context, httpWorkers int, browserWorkers int, batchSize int) <-chan service.ScrapeResult
 }
 
 type ArticleService interface {
@@ -23,6 +23,8 @@ type Scheduler struct {
 	scrapeService  ScrapeService
 	articleService ArticleService
 	interval       time.Duration
+	httpWorkers    int
+	browserWorkers int
 	ticker         *time.Ticker
 	stopCh         chan struct{}
 	doneCh         chan struct{}
@@ -31,11 +33,13 @@ type Scheduler struct {
 	nextRun        time.Time
 }
 
-func New(scrapeService ScrapeService, articleService ArticleService, interval time.Duration) *Scheduler {
+func New(scrapeService ScrapeService, articleService ArticleService, interval time.Duration, httpWorkers int, browserWorkers int) *Scheduler {
 	return &Scheduler{
 		scrapeService:  scrapeService,
 		articleService: articleService,
 		interval:       interval,
+		httpWorkers:    httpWorkers,
+		browserWorkers: browserWorkers,
 		running:        false,
 	}
 }
@@ -119,7 +123,7 @@ func (s *Scheduler) scrapeAndStoreAll(ctx context.Context) {
 	// Use concurrent scraping with streaming
 	// 4 workers = 4 concurrent scrapers at a time
 	// 100 batch size = insert every 100 articles
-	resultChan := s.scrapeService.ScrapeAllConcurrent(jobCtx, 4, 100)
+	resultChan := s.scrapeService.ScrapeAllConcurrent(jobCtx, s.httpWorkers, s.browserWorkers, 100)
 
 	totalScraped := 0
 	totalStored := 0

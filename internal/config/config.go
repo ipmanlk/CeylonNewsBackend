@@ -19,6 +19,8 @@ type Config struct {
 type SchedulerConfig struct {
 	ScrapeInterval time.Duration
 	Enabled        bool
+	HTTPWorkers    int
+	BrowserWorkers int
 }
 
 type DatabaseConfig struct {
@@ -74,6 +76,8 @@ func Load() (*Config, error) {
 		Scheduler: SchedulerConfig{
 			ScrapeInterval: getEnvDuration("SCHEDULER_SCRAPE_INTERVAL", 1*time.Hour),
 			Enabled:        getEnvBool("SCHEDULER_ENABLED", true),
+			HTTPWorkers:    getEnvInt("SCHEDULER_HTTP_WORKERS", 4),
+			BrowserWorkers: getEnvInt("SCHEDULER_BROWSER_WORKERS", 1),
 		},
 		HTTP: HTTPConfig{
 			Host:            getEnv("HTTP_HOST", "0.0.0.0"),

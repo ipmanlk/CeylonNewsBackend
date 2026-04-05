@@ -12,6 +12,7 @@ type SourceScraper interface {
 	Name() string
 	Languages() []model.Language
 	Scrape(ctx context.Context, language model.Language) ([]model.ScrapedArticle, error)
+	UsesBrowser(language model.Language) bool
 }
 
 type Registry struct {

@@ -39,6 +39,15 @@ func (s *GenericScraper) Scrape(ctx context.Context, language model.Language) ([
 	return nil, nil
 }
 
+func (s *GenericScraper) UsesBrowser(language model.Language) bool {
+	for _, lc := range s.config.Languages {
+		if model.Language(lc.Language) == language {
+			return lc.Listing.Browser || lc.Article.Browser || lc.Article.Selector != ""
+		}
+	}
+	return false
+}
+
 func (s *GenericScraper) scrapeLanguage(ctx context.Context, lc LangConfig) ([]model.ScrapedArticle, error) {
 	switch lc.Listing.Type {
 	case "rss":

@@ -34,48 +34,64 @@ type scrapeTask struct {
 	language model.Language
 }
 
-func (s *scrapeService) ScrapeAllConcurrent(ctx context.Context, workerCount int, batchSize int) <-chan ScrapeResult {
-	resultChan := make(chan ScrapeResult, workerCount)
+func (s *scrapeService) ScrapeAllConcurrent(ctx context.Context, httpWorkers int, browserWorkers int, batchSize int) <-chan ScrapeResult {
+	resultChan := make(chan ScrapeResult, httpWorkers+browserWorkers)
 
-	// Create task queue
-	tasks := make([]scrapeTask, 0)
+	var httpTasks []scrapeTask
+	var browserTasks []scrapeTask
+
 	scrapers := s.registry.GetScrapers()
-
-	// Build all scraping tasks (scraper + language combinations)
 	for _, scraper := range scrapers {
 		for _, lang := range scraper.Languages() {
-			tasks = append(tasks, scrapeTask{
-				scraper:  scraper,
-				language: lang,
-			})
+			task := scrapeTask{scraper: scraper, language: lang}
+			if scraper.UsesBrowser(lang) {
+				browserTasks = append(browserTasks, task)
+			} else {
+				httpTasks = append(httpTasks, task)
+			}
 		}
 	}
 
-	// Start worker pool
 	go func() {
 		defer close(resultChan)
 
-		taskChan := make(chan scrapeTask, len(tasks))
 		var wg sync.WaitGroup
 
-		// Start workers
-		for i := 0; i < workerCount; i++ {
+		httpCh := make(chan scrapeTask, len(httpTasks))
+		for i := 0; i < httpWorkers; i++ {
 			wg.Add(1)
-			go s.worker(ctx, taskChan, resultChan, batchSize, &wg)
+			go s.worker(ctx, httpCh, resultChan, batchSize, &wg)
 		}
 
-		// Send tasks to workers
-		for _, task := range tasks {
+		browserCh := make(chan scrapeTask, len(browserTasks))
+		for i := 0; i < browserWorkers; i++ {
+			wg.Add(1)
+			go s.worker(ctx, browserCh, resultChan, batchSize, &wg)
+		}
+
+		for _, task := range httpTasks {
 			select {
-			case taskChan <- task:
+			case httpCh <- task:
 			case <-ctx.Done():
-				close(taskChan)
+				close(httpCh)
+				close(browserCh)
 				wg.Wait()
 				return
 			}
 		}
+		close(httpCh)
 
-		close(taskChan)
+		for _, task := range browserTasks {
+			select {
+			case browserCh <- task:
+			case <-ctx.Done():
+				close(browserCh)
+				wg.Wait()
+				return
+			}
+		}
+		close(browserCh)
+
 		wg.Wait()
 	}()
 
