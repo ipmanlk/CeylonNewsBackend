@@ -61,19 +61,24 @@ func main() {
 		close(results)
 	}()
 
-	var passed, failed int
+	var passed int
+	var failed []result
 	for r := range results {
 		if r.success {
 			passed++
 			fmt.Printf("✓ %s [%s]: %d articles\n", r.source, r.language, r.count)
 		} else {
-			failed++
-			fmt.Printf("✗ %s [%s]: %s\n", r.source, r.language, r.error)
+			failed = append(failed, r)
 		}
 	}
 
-	fmt.Printf("\n%d passed, %d failed\n", passed, failed)
-	if failed > 0 {
+	fmt.Printf("\n%d passed, %d failed\n", passed, len(failed))
+
+	if len(failed) > 0 {
+		fmt.Println("\nFailed sources:")
+		for _, f := range failed {
+			fmt.Printf("  ✗ %s [%s]: %s\n", f.source, f.language, f.error)
+		}
 		os.Exit(1)
 	}
 }
